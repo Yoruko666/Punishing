@@ -1,0 +1,108 @@
+{
+  
+  "DashForwardName" : "c_luciark3_action_flash2",
+  "DashBackwardName" : "c_luciark3_action_flash2",
+  "AttackList": [
+    {
+      "AnimName": "Attack1",
+      "ComboTime": 0.35,
+      "ExitTime": 1.2,
+      "AnimTime": 2.8,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_atk_attack01"
+        }
+      ]
+    },
+    {
+      "AnimName": "Attack2",
+      "ComboTime": 0.52,
+      "ExitTime": 1.6,
+      "AnimTime": 4.167,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_atk_attack02"
+        }
+      ]
+    },
+    {
+      "AnimName": "Attack3",
+      "ComboTime": 1,
+      "ExitTime": 1.3,
+      "AnimTime": 3.5,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_atk_attack03"
+        }
+      ]
+    },
+    {
+      "AnimName": "Attack4",
+      "ComboTime": 0.8,
+      "ExitTime": 1.5,
+      "AnimTime": 3.733,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_atk_attack04"
+        }
+      ]
+    },
+    {
+      "AnimName": "Attack5",
+      "ComboTime": 1.5,
+      "ExitTime": 1.8,
+      "AnimTime": 4.067,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_atk_attack05"
+        }
+      ]
+    }
+  ],
+  "SkillList": [
+    {
+      "AnimName": "Skill1",
+      "AnimTime": 3.2,
+      "ExitTime": 0.8,
+      "CoolDown": 5.0,
+      "DamageMultiplier": 2.0,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_skill_attack21"
+        }
+      ]
+    },
+    {
+      "AnimName": "Skill2",
+      "AnimTime": 3.33,
+      "ExitTime": 1,
+      "CoolDown": 3.0,
+      "DamageMultiplier": 1.5,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_skill_attack31"
+        }
+      ]
+    },
+    {
+      "AnimName": "Skill3",
+      "AnimTime": 3.033,
+      "ExitTime": 1.4,
+      "CoolDown": 8.0,
+      "DamageMultiplier": 3.0,
+      "SoundEffectList":[
+        {
+            "ExecTime": 0,
+            "SoundName": "c_luciark3_skill_attack11"
+        }
+      ]
+    }
+  ]
+}
