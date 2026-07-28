@@ -40,6 +40,4 @@ public class AbilityConfig
     /// <summary>Ability 效果（连招索引/无敌/位移等），可自由组合</summary>
     public List<AbilityEffect> AbilityEffects;
 
-    /// <summary>派生配置：在指定窗口内按指定输入可切换到目标 Ability（招式树）</summary>
-    public List<AbilityDerivation> Derivations;
 }

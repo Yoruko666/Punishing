@@ -13,7 +13,6 @@ public class AbilityState : StateBase
     private int effectIndex;
     private int soundIndex;
     private bool bufferedCombo;
-    private AbilityDerivation bufferedDerivation;
 
     /// <summary>当前 Ability 是否为普攻连招链的一员（链内 Ability 在 ExitTime 即派生，链外持缓冲到动画结束）</summary>
     private bool IsComboAbility =>
@@ -33,12 +32,15 @@ public class AbilityState : StateBase
             return;
         }
 
+        // 非连招 Ability（技能、闪避等）打断连招链，重置索引
+        if (!IsComboAbility)
+            Owner.ComboIndex = 0;
+
         Owner.PlayAnim(currentAbility.AnimName);
         timer = 0;
         effectIndex = 0;
         soundIndex = 0;
         bufferedCombo = false;
-        bufferedDerivation = null;
 
         if (currentAbility.CoolDown > 0)
             Owner.StartAbilityCoolDown(currentAbility.Id);
@@ -53,6 +55,7 @@ public class AbilityState : StateBase
 
     public override void OnUpdate()
     {
+
         timer += Time.deltaTime;
 
         // 持续型效果（无敌窗口、位移、伤害等）
@@ -62,10 +65,6 @@ public class AbilityState : StateBase
                 effect?.OnUpdate(Owner, timer);
         }
 
-        // 派生（招式树）：优先于普攻缓冲
-        if (TryHandleDerivation())
-            return;
-
         // 持续监听攻击键：
         // 普通招式从 ExitTime 前 0.3s 起监听；ListenAttackFromStart 的招式（闪避）整个过程都监听
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -74,15 +73,15 @@ public class AbilityState : StateBase
                 bufferedCombo = true;
         }
 
-        // ExitTime 已过 → 开放动作
         if (timer > currentAbility.ExitTime)
-            Owner.CanAction = true;
-
-        // ExitTime 已过且有攻击缓冲 → 普攻链内 Ability、或允许从头预输入的 Ability（闪避）立即派生普攻
-        if (timer > currentAbility.ExitTime && bufferedCombo && (IsComboAbility || currentAbility.ListenAttackFromStart))
         {
-            Owner.ActivateComboAttack();
-            return;
+            if (bufferedCombo && (IsComboAbility || currentAbility.ListenAttackFromStart))
+            {
+                Owner.ActivateComboAttack();
+                return;
+            }
+            Owner.CanAction = true;
+            Owner.ComboIndex = 0;
         }
 
         // 动画结束 → 有缓冲则派生（闪避等非链内 Ability 的预输入在此释放），否则重置连招回 Idle
@@ -119,42 +118,6 @@ public class AbilityState : StateBase
             Owner.PlaySound(currentAbility.SoundEffectList[soundIndex].SoundName);
             soundIndex++;
         }
-    }
-
-    /// <summary>
-    /// 检测并执行招式派生。支持提前 0.3s 预输入缓冲，
-    /// 到达派生窗口起点后切换到目标 Ability。返回 true 表示已发生派生。
-    /// </summary>
-    private bool TryHandleDerivation()
-    {
-        if (currentAbility.Derivations == null || currentAbility.Derivations.Count == 0)
-            return false;
-
-        // 缓冲：在窗口（含 0.3s 预输入）内按下对应输入
-        if (bufferedDerivation == null)
-        {
-            foreach (var d in currentAbility.Derivations)
-            {
-                float winEnd = d.EndTime > 0 ? d.EndTime : currentAbility.AnimTime;
-                if (timer >= d.StartTime - 0.3f && timer <= winEnd && Owner.GetDeriveInputDown(d.Input))
-                {
-                    bufferedDerivation = d;
-                    break;
-                }
-            }
-        }
-
-        // 执行：到达窗口起点后切换
-        if (bufferedDerivation != null && timer >= bufferedDerivation.StartTime)
-        {
-            if (Owner.ActivateAbilityById(bufferedDerivation.TargetId))
-                return true;
-
-            // 派生失败（如目标在冷却）→ 清除缓冲，避免卡住
-            bufferedDerivation = null;
-        }
-
-        return false;
     }
 
     public override void OnExit()

@@ -77,6 +77,11 @@ public class PlayerController : CharacterBase
         var combo = PlayerConfig?.ComboAbilityIds;
         if (combo == null || combo.Count == 0) return false;
 
+        // 释放普攻时立刻转到移动输入方向
+        Vector3 dir = GetInputDirection();
+        if (dir != Vector3.zero)
+            RotateImmediate(dir);
+
         int idx = Mathf.Clamp(ComboIndex, 0, combo.Count - 1);
         return ActivateAbilityById(combo[idx]);
     }
@@ -144,22 +149,6 @@ public class PlayerController : CharacterBase
         return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
     }
 
-    /// <summary>查询派生输入是否在本帧按下（供 AbilityState 检测招式派生）</summary>
-    public bool GetDeriveInputDown(DeriveInput input)
-    {
-        KeyCode key = input switch
-        {
-            DeriveInput.Attack => KeyCode.Mouse0,
-            DeriveInput.Dodge => KeyCode.LeftShift,
-            DeriveInput.Hotkey1 => KeyCode.Alpha1,
-            DeriveInput.Hotkey2 => KeyCode.Alpha2,
-            DeriveInput.Hotkey3 => KeyCode.Alpha3,
-            DeriveInput.Hotkey4 => KeyCode.Alpha4,
-            _ => KeyCode.None
-        };
-        return key != KeyCode.None && Input.GetKeyDown(key);
-    }
-
     // ---------------- 主循环与输入 ----------------
 
     private void Update()
@@ -185,11 +174,19 @@ public class PlayerController : CharacterBase
             return;
         }
 
-        // 闪避（Dodge，根据是否有移动输入决定前后）
+        // 闪避：有移动输入时转向该方向并前冲，无输入时后撤
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            bool moving = InputManager.Instance.CheckMoveInput();
-            ActivateAbilityById(moving ? PlayerConfig.DodgeForwardId : PlayerConfig.DodgeBackwardId);
+            Vector3 dir = GetInputDirection();
+            if (dir != Vector3.zero)
+            {
+                RotateImmediate(dir);
+                ActivateAbilityById(PlayerConfig.DodgeForwardId);
+            }
+            else
+            {
+                ActivateAbilityById(PlayerConfig.DodgeBackwardId);
+            }
             return;
         }
 
@@ -239,5 +236,23 @@ public class PlayerController : CharacterBase
     public void SwitchState(PlayerState state)
     {
         StateMachine.SwitchState(state);
+    }
+
+    // ---------------- 输入方向与旋转 ----------------
+
+    /// <summary>获取键盘输入对应的世界空间方向（基于摄像机朝向）</summary>
+    public Vector3 GetInputDirection()
+    {
+        Vector2 move = InputManager.Instance.MoveInput;
+        if (move.magnitude < 0.1f) return Vector3.zero;
+        return (move.y * CameraController.Instance.GetForwardVector()
+               + move.x * CameraController.Instance.GetRightVector()).normalized;
+    }
+
+    /// <summary>立即旋转角色面向目标方向</summary>
+    public void RotateImmediate(Vector3 targetDirection)
+    {
+        if (targetDirection.sqrMagnitude < 0.001f) return;
+        transform.rotation = Quaternion.LookRotation(targetDirection);
     }
 }
