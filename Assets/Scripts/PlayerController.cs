@@ -1,6 +1,7 @@
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using System.Collections.Generic;
 
 public class PlayerController : CharacterBase
 {
@@ -13,61 +14,199 @@ public class PlayerController : CharacterBase
     public bool CanAction = true;
     public int ComboIndex = 0;
 
-    // 技能冷却计时器数组（秒），与 SkillList 索引对应
-    private float[] skillCoolDowns;
-    public int SkillIndex { get; set; }
+    /// <summary>无敌标志，由 InvincibleEffect 控制，供受击/伤害系统查询</summary>
+    public bool IsInvincible = false;
 
-    public float GetSkillCoolDown(int index) => index >= 0 && index < skillCoolDowns?.Length ? skillCoolDowns[index] : 0;
+    /// <summary>当前待释放/正在释放的 Ability，由 AbilityState 在 OnEnter 读取</summary>
+    public AbilityConfig PendingAbility { get; private set; }
+
+    private readonly Dictionary<string, AbilityConfig> _abilityMap = new();
+    private readonly Dictionary<string, float> _coolDowns = new();
 
     protected override void Start()
     {
         base.Start();
 
         LoadPlayerConfig();
+        BuildAbilityMap();
 
-        // 初始化冷却数组
-        if (PlayerConfig.SkillList != null)
-            skillCoolDowns = new float[PlayerConfig.SkillList.Count];
-
-        StateMachine = new StateMachine(this);
+        StateMachine = new StateMachine();
         StateMachine.RegisterState(PlayerState.Idle, new IdleState(this));
         StateMachine.RegisterState(PlayerState.Run, new RunState(this));
-        StateMachine.RegisterState(PlayerState.DashForward, new DashState(this, DashState.DashDirection.Forward));
-        StateMachine.RegisterState(PlayerState.DashBackward, new DashState(this, DashState.DashDirection.Backward));
-        StateMachine.RegisterState(PlayerState.Attack, new AttackState(this));
-        StateMachine.RegisterState(PlayerState.Skill, new SkillState(this));
+        StateMachine.RegisterState(PlayerState.Ability, new AbilityState(this));
         StateMachine.SwitchState(PlayerState.Idle);
 
         CharacterController = GetComponent<CharacterController>();
     }
 
-    /// <summary>尝试释放指定索引的技能（含冷却检查）</summary>
-    public bool TryActivateSkill(int index)
+    private void BuildAbilityMap()
     {
-        if (skillCoolDowns == null || index < 0 || index >= skillCoolDowns.Length)
-            return false;
+        _abilityMap.Clear();
+        if (PlayerConfig?.Abilities == null) return;
+        foreach (var ability in PlayerConfig.Abilities)
+        {
+            if (ability != null && !string.IsNullOrEmpty(ability.Id))
+                _abilityMap[ability.Id] = ability;
+        }
+    }
 
-        if (skillCoolDowns[index] > 0)
-            return false; // 冷却中
+    public AbilityConfig GetAbility(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        _abilityMap.TryGetValue(id, out var ability);
+        return ability;
+    }
 
-        SkillIndex = index;
-        SwitchState(PlayerState.Skill);
+    // ---------------- Ability 激活 ----------------
+
+    /// <summary>按 Id 释放 Ability（含冷却检查）</summary>
+    public bool ActivateAbilityById(string id)
+    {
+        AbilityConfig ability = GetAbility(id);
+        if (ability == null) return false;
+        if (GetCoolDownRemaining(id) > 0) return false; // 冷却中
+
+        PendingAbility = ability;
+        SwitchState(PlayerState.Ability);
         return true;
     }
 
-    public void StartSkillCoolDown(int index)
+    /// <summary>根据当前 ComboIndex 释放普通攻击链中对应的一段</summary>
+    public bool ActivateComboAttack()
     {
-        if (index >= 0 && index < skillCoolDowns?.Length)
-            skillCoolDowns[index] = PlayerConfig.SkillList[index].CoolDown;
+        var combo = PlayerConfig?.ComboAbilityIds;
+        if (combo == null || combo.Count == 0) return false;
+
+        int idx = Mathf.Clamp(ComboIndex, 0, combo.Count - 1);
+        return ActivateAbilityById(combo[idx]);
     }
 
-    /// <summary>检测技能快捷键输入，返回是否触发了技能</summary>
-    public bool CheckSkillInput()
+    /// <summary>设置连招索引（由 ComboEffect 调用）</summary>
+    public void ApplyCombo(int value)
     {
-        if (skillCoolDowns == null)
-            return false;
+        int count = PlayerConfig?.ComboAbilityIds?.Count ?? 0;
+        if (count <= 0)
+        {
+            ComboIndex = 0;
+            return;
+        }
 
-        for (int i = 0; i < skillCoolDowns.Length; i++)
+        if (value >= count) value = 0;
+        if (value < 0) value = 0;
+
+        ComboIndex = value;
+    }
+
+    // ---------------- 冷却 ----------------
+
+    public void StartAbilityCoolDown(string id)
+    {
+        AbilityConfig ability = GetAbility(id);
+        if (ability != null && ability.CoolDown > 0)
+            _coolDowns[id] = ability.CoolDown;
+    }
+
+    public float GetCoolDownRemaining(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return 0;
+        _coolDowns.TryGetValue(id, out float remaining);
+        return remaining > 0 ? remaining : 0;
+    }
+
+    private void UpdateCoolDowns()
+    {
+        if (_coolDowns.Count == 0) return;
+
+        float dt = Time.deltaTime;
+        // 复制键集合以便在遍历中修改字典的值
+        var keys = new List<string>(_coolDowns.Keys);
+        foreach (var key in keys)
+        {
+            if (_coolDowns[key] > 0)
+                _coolDowns[key] -= dt;
+        }
+    }
+
+    // ---------------- UI 辅助（热键 Ability） ----------------
+
+    public AbilityConfig GetHotkeyAbility(int index)
+    {
+        var ids = PlayerConfig?.HotkeyAbilityIds;
+        if (ids == null || index < 0 || index >= ids.Count) return null;
+        return GetAbility(ids[index]);
+    }
+
+    /// <summary>热键 Ability 剩余冷却的归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
+    public float GetHotkeyAbilityCoolDownRatio(int index)
+    {
+        AbilityConfig ability = GetHotkeyAbility(index);
+        if (ability == null || ability.CoolDown <= 0) return 0;
+        return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
+    }
+
+    /// <summary>查询派生输入是否在本帧按下（供 AbilityState 检测招式派生）</summary>
+    public bool GetDeriveInputDown(DeriveInput input)
+    {
+        KeyCode key = input switch
+        {
+            DeriveInput.Attack => KeyCode.Mouse0,
+            DeriveInput.Dodge => KeyCode.LeftShift,
+            DeriveInput.Hotkey1 => KeyCode.Alpha1,
+            DeriveInput.Hotkey2 => KeyCode.Alpha2,
+            DeriveInput.Hotkey3 => KeyCode.Alpha3,
+            DeriveInput.Hotkey4 => KeyCode.Alpha4,
+            _ => KeyCode.None
+        };
+        return key != KeyCode.None && Input.GetKeyDown(key);
+    }
+
+    // ---------------- 主循环与输入 ----------------
+
+    private void Update()
+    {
+        StateMachine.Update();
+        UpdateCoolDowns();
+
+        if (CanAction)
+            ProcessInput();
+    }
+
+    /// <summary>集中处理通用输入（热键 Ability → 攻击 → 闪避 → 移动）</summary>
+    private void ProcessInput()
+    {
+        // 热键 Ability（1/2/3/4）优先
+        if (CheckHotkeyAbilityInput())
+            return;
+
+        // 普通攻击
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            ActivateComboAttack();
+            return;
+        }
+
+        // 闪避（Dodge，根据是否有移动输入决定前后）
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            bool moving = InputManager.Instance.CheckMoveInput();
+            ActivateAbilityById(moving ? PlayerConfig.DodgeForwardId : PlayerConfig.DodgeBackwardId);
+            return;
+        }
+
+        // 移动 → 跑步（已在跑步中则跳过，避免重置 RunStage）
+        if (InputManager.Instance.CheckMoveInput() && StateMachine.CurrentState is not RunState)
+        {
+            SwitchState(PlayerState.Run);
+        }
+    }
+
+    /// <summary>检测热键 Ability 输入，返回是否触发</summary>
+    private bool CheckHotkeyAbilityInput()
+    {
+        var ids = PlayerConfig?.HotkeyAbilityIds;
+        if (ids == null) return false;
+
+        for (int i = 0; i < ids.Count; i++)
         {
             KeyCode key = i switch
             {
@@ -78,7 +217,7 @@ public class PlayerController : CharacterBase
                 _ => KeyCode.None
             };
             if (key != KeyCode.None && Input.GetKeyDown(key))
-                return TryActivateSkill(i);
+                return ActivateAbilityById(ids[i]);
         }
         return false;
     }
@@ -94,56 +233,6 @@ public class PlayerController : CharacterBase
         else
         {
             Debug.LogWarning($"配置文件不存在: {path}");
-        }
-    }
-
-    private void Update()
-    {
-        StateMachine.Update();
-        UpdateCoolDowns();
-
-        if (CanAction)
-            ProcessInput();
-    }
-
-    /// <summary>集中处理通用输入（移动↔跑步、攻击、闪避、技能）</summary>
-    private void ProcessInput()
-    {
-        // 技能快捷键优先
-        if (CheckSkillInput())
-            return;
-
-        // 攻击
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            SwitchState(PlayerState.Attack);
-            return;
-        }
-
-        // 闪避（根据是否有移动输入决定方向）
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            SwitchState(InputManager.Instance.CheckMoveInput() ? PlayerState.DashForward : PlayerState.DashBackward);
-            return;
-        }
-
-        // 移动 → 跑步（已在跑步中则跳过，避免重置 RunStage）
-        if (InputManager.Instance.CheckMoveInput() && StateMachine.CurrentState is not RunState)
-        {
-            SwitchState(PlayerState.Run);
-        }
-    }
-
-    private void UpdateCoolDowns()
-    {
-        if (skillCoolDowns == null)
-            return;
-
-        float dt = Time.deltaTime;
-        for (int i = 0; i < skillCoolDowns.Length; i++)
-        {
-            if (skillCoolDowns[i] > 0)
-                skillCoolDowns[i] -= dt;
         }
     }
 

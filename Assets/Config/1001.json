@@ -1,107 +1,151 @@
 {
-  
-  "DashForwardName" : "c_luciark3_action_flash2",
-  "DashBackwardName" : "c_luciark3_action_flash2",
-  "AttackList": [
+  "ComboAbilityIds": ["Attack1", "Attack2", "Attack3", "Attack4", "Attack5", "Attack6"],
+  "HotkeyAbilityIds": ["Skill1", "Skill2", "Skill3"],
+  "DodgeForwardId": "DodgeForward",
+  "DodgeBackwardId": "DodgeBackward",
+  "Abilities": [
     {
+      "Id": "Attack1",
       "AnimName": "Attack1",
-      "ComboTime": 0.35,
-      "ExitTime": 1.2,
+      "ExitTime": 0.35,
       "AnimTime": 2.8,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_atk_attack01"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack01" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 1 }
       ]
     },
     {
+      "Id": "Attack2",
       "AnimName": "Attack2",
-      "ComboTime": 0.52,
-      "ExitTime": 1.6,
+      "ExitTime": 0.52,
       "AnimTime": 4.167,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_atk_attack02"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack02" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 2 }
       ]
     },
     {
+      "Id": "Attack3",
       "AnimName": "Attack3",
-      "ComboTime": 1,
-      "ExitTime": 1.3,
+      "ExitTime": 1.0,
       "AnimTime": 3.5,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_atk_attack03"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack03" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 3 }
       ]
     },
     {
+      "Id": "Attack4",
       "AnimName": "Attack4",
-      "ComboTime": 0.8,
-      "ExitTime": 1.5,
+      "ExitTime": 0.8,
       "AnimTime": 3.733,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_atk_attack04"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack04" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 4 }
       ]
     },
     {
+      "Id": "Attack5",
       "AnimName": "Attack5",
-      "ComboTime": 1.5,
-      "ExitTime": 1.8,
+      "ExitTime": 1.5,
       "AnimTime": 4.067,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_atk_attack05"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack05" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
       ]
-    }
-  ],
-  "SkillList": [
+    },
     {
+      "Id": "Attack6",
+      "AnimName": "Attack6",
+      "ExitTime": 0.7,
+      "AnimTime": 3.1,
+      "ListenAttackFromStart": true,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack06" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 3 }
+      ]
+    },
+    {
+      "Id": "Skill1",
       "AnimName": "Skill1",
       "AnimTime": 3.2,
       "ExitTime": 0.8,
       "CoolDown": 5.0,
       "DamageMultiplier": 2.0,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_skill_attack21"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
       ]
     },
     {
+      "Id": "Skill2",
       "AnimName": "Skill2",
       "AnimTime": 3.33,
-      "ExitTime": 1,
+      "ExitTime": 1.0,
       "CoolDown": 3.0,
       "DamageMultiplier": 1.5,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_skill_attack31"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
       ]
     },
     {
+      "Id": "Skill3",
       "AnimName": "Skill3",
       "AnimTime": 3.033,
       "ExitTime": 1.4,
       "CoolDown": 8.0,
       "DamageMultiplier": 3.0,
-      "SoundEffectList":[
-        {
-            "ExecTime": 0,
-            "SoundName": "c_luciark3_skill_attack11"
-        }
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
+      ]
+    },
+    {
+      "Id": "DodgeForward",
+      "AnimName": "DashForward",
+      "AnimTime": 1.1,
+      "ExitTime": 0.5,
+      "CoolDown": 0,
+      "ListenAttackFromStart": true,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 5 },
+        { "Type": "Invincible", "StartTime": 0, "EndTime": 0.4 }
+      ]
+    },
+    {
+      "Id": "DodgeBackward",
+      "AnimName": "DashBackward",
+      "AnimTime": 1.267,
+      "ExitTime": 0.5,
+      "CoolDown": 0,
+      "ListenAttackFromStart": true,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
+      ],
+      "AbilityEffects": [
+        { "Type": "Invincible", "StartTime": 0, "EndTime": 0.4 }
       ]
     }
   ]
