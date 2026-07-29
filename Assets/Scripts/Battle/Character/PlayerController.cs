@@ -2,6 +2,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 
 public class PlayerController : CharacterBase
 {
@@ -14,6 +15,9 @@ public class PlayerController : CharacterBase
     public bool CanAction = true;
     public int ComboIndex = 0;
 
+    /// <summary>当前信号球消数（1/2/3），供技能系统读取</summary>
+    public int CurrentMatchCount { get; set; } = 1;
+
     /// <summary>无敌标志，由 InvincibleEffect 控制，供受击/伤害系统查询</summary>
     public bool IsInvincible = false;
 
@@ -23,8 +27,32 @@ public class PlayerController : CharacterBase
     /// <summary>角色专属模块（如 LuciaModule），没有则为 null</summary>
     public CharacterModule Module { get; private set; }
 
+    // ================ 信号球系统 ================
+
+    public enum SignalOrbType { Red, Yellow, Blue }
+
+    private readonly List<SignalOrbType> _signalOrbs = new(8);
+    private readonly (int, int)[] _SignalOrbGroup = new (int, int)[MaxSignalOrbs];
+    private const int MaxSignalOrbs = 8;
+
+    /// <summary>连击计数与窗口计时，用于信号球生成</summary>
+    private int _comboAttackCount;
+    private float _comboAttackTimer;
+    private const float ComboAttackWindow = 1.5f;
+    private const int MinAttacksForOrb = 2;
+
+    /// <summary>信号球对应技能 ID（红/黄/蓝 → Skill1/Skill2/Skill3）</summary>
+    private static readonly string[] OrbSkillIds = { "Skill1", "Skill2", "Skill3" };
+
+    /// <summary>信号球颜色，供 UI 使用</summary>
+    public static readonly Color[] OrbColors =
+    {
+        new Color(1f, 0.27f, 0.27f), // Red
+        new Color(1f, 0.84f, 0f),    // Yellow
+        new Color(0.27f, 0.53f, 1f)  // Blue
+    };
+
     private readonly Dictionary<string, AbilityConfig> _abilityMap = new();
-    private readonly Dictionary<string, float> _coolDowns = new();
     private readonly AttributeSet _attributeSet = new();
 
     protected override void Start()
@@ -67,12 +95,11 @@ public class PlayerController : CharacterBase
 
     // ---------------- Ability 激活 ----------------
 
-    /// <summary>按 Id 释放 Ability（含冷却检查）</summary>
+    /// <summary>按 Id 释放 Ability（不含冷却检查，信号球系统代替了冷却）</summary>
     public bool ActivateAbilityById(string id)
     {
         AbilityConfig ability = GetAbility(id);
         if (ability == null) return false;
-        if (GetCoolDownRemaining(id) > 0) return false; // 冷却中
 
         PendingAbility = ability;
         SwitchState(PlayerState.Ability);
@@ -91,10 +118,14 @@ public class PlayerController : CharacterBase
             RotateImmediate(dir);
 
         int idx = Mathf.Clamp(ComboIndex, 0, combo.Count - 1);
+
+        // 记录连击用于信号球生成
+        OnAttackPerformed();
+
         return ActivateAbilityById(combo[idx]);
     }
 
-    /// <summary>打断并重置普攻连招链。任何“非连招攻击”的动作（移动、闪避、技能、自然中断）都应调用</summary>
+    /// <summary>打断并重置普攻连招链。任何"非连招攻击"的动作（移动、闪避、技能、自然中断）都应调用</summary>
     public void ResetCombo()
     {
         ComboIndex = 0;
@@ -116,6 +147,95 @@ public class PlayerController : CharacterBase
         ComboIndex = value;
     }
 
+    // ---------------- 信号球系统 ----------------
+
+    // 每次释放普攻时调用，跟踪连击窗口以生成信号球
+    private void OnAttackPerformed()
+    {
+        _comboAttackCount++;
+        _comboAttackTimer = 0f;
+
+        if (_comboAttackCount >= MinAttacksForOrb && _signalOrbs.Count < MaxSignalOrbs)
+        {
+            GenerateSignalOrb();
+            _comboAttackCount = 0;
+        }
+    }
+
+    // 更新信号球分组
+    private void UpdateSignalOrbGroup()
+    {
+        for (int i = 0; i < _signalOrbs.Count; i++)
+            _SignalOrbGroup[i] = (-1, -1);
+        for (int i = 0; i < _signalOrbs.Count; i++)
+        {
+            int groupCount = 0;
+            if (_SignalOrbGroup[i] != (-1, -1)) 
+                continue;
+            for(int j = 0; j < 3; j++)
+            {
+                if (i + j >= _signalOrbs.Count || _signalOrbs[i] != _signalOrbs[i + j])
+                    break;
+                groupCount++;
+            }
+            for(int j = 0; j < groupCount; j++)
+                _SignalOrbGroup[i + j] = (i, groupCount);
+        }
+    }
+
+    // 产生信号球
+    private void GenerateSignalOrb()
+    {
+        if (_signalOrbs.Count >= MaxSignalOrbs) return;
+        SignalOrbType type = (SignalOrbType)Random.Range(0, 3);
+        _signalOrbs.Add(type); 
+        UpdateSignalOrbGroup();
+    }
+
+    // 消除信号球
+    public bool TryConsumeSignalOrb(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= MaxSignalOrbs) return false;
+        int listIndex = MaxSignalOrbs - 1 - slotIndex;
+        if (listIndex < 0 || listIndex >= _signalOrbs.Count) return false;
+
+        SignalOrbType type = _signalOrbs[listIndex];
+
+        int headIndex = _SignalOrbGroup[listIndex].Item1;
+        int matchCount = _SignalOrbGroup[listIndex].Item2;
+        _signalOrbs.RemoveRange(headIndex, matchCount);
+
+        CurrentMatchCount = matchCount;
+        string matchPrefix = matchCount == 3 ? "三消" : matchCount == 2 ? "二消" : "单消";
+        string skillId = OrbSkillIds[(int)type];
+        Debug.Log($"[信号球] {matchPrefix} 键{slotIndex + 1} ({type}, {skillId})");
+        UpdateSignalOrbGroup();
+        return ActivateAbilityById(skillId);
+    }
+
+    /// <summary>获取当前信号球列表（供 UI 使用），索引 0 = 最早（右侧/键 8）</summary>
+    public List<SignalOrbType> GetSignalOrbs() => _signalOrbs;
+
+    /// <summary>获取信号球最大数量</summary>
+    public int GetMaxSignalOrbs() => MaxSignalOrbs;
+
+    /// <summary>信号球列表索引 → 视觉位置（0=左/键1, 7=右/键8）</summary>
+    public int ListIndexToSlot(int listIndex) => MaxSignalOrbs - 1 - listIndex;
+
+    /// <summary>信号球生成窗口跟踪，每帧更新超时重置</summary>
+    private void UpdateComboWindow()
+    {
+        if (_comboAttackCount > 0)
+        {
+            _comboAttackTimer += Time.deltaTime;
+            if (_comboAttackTimer >= ComboAttackWindow)
+            {
+                _comboAttackCount = 0;
+                _comboAttackTimer = 0f;
+            }
+        }
+    }
+
     // ---------------- 属性（AttributeSet） ----------------
 
     /// <summary>
@@ -133,102 +253,30 @@ public class PlayerController : CharacterBase
     /// <summary>获取任意属性的当前值</summary>
     public float GetAttribute(string attributeName) => _attributeSet.GetAttribute(attributeName);
 
-    // ---------------- Module 委托（内部消化，不暴露给外部） ----------------
-
-    /// <summary>Ability 进行中每帧的 Module 预输入处理</summary>
-    public void NotifyModuleAbilityUpdate(float timer, float exitTime)
-    {
-        if (Module != null) Module.OnAbilityUpdate(timer, exitTime);
-    }
-
-    /// <summary>在 ExitTime 尝试激活 Module 的缓冲技能（如 SpSkill），成败均在此刻决定</summary>
-    public bool TryConsumeModuleBufferedSkill() => Module != null && Module.TryActivateBufferedSkill();
-
-    /// <summary>ExitTime 无预输入时通知 Module 重置专属状态</summary>
-    public void NotifyModuleAbilityEnd()
-    {
-        if (Module != null) Module.OnAbilityExitNoBuffer();
-    }
-
-    /// <summary>热键 4 输入时交由 Module 处理，返回是否已消耗</summary>
-    public bool TryHandleModuleSkillKey(int index) => Module != null && Module.HandleSkillKey(index);
-
-    // ---------------- 冷却 ----------------
-
-    public void StartAbilityCoolDown(string id)
-    {
-        AbilityConfig ability = GetAbility(id);
-        if (ability != null && ability.CoolDown > 0)
-            _coolDowns[id] = ability.CoolDown;
-    }
-
-    public float GetCoolDownRemaining(string id)
-    {
-        if (string.IsNullOrEmpty(id)) return 0;
-        _coolDowns.TryGetValue(id, out float remaining);
-        return remaining > 0 ? remaining : 0;
-    }
-
-    private void UpdateCoolDowns()
-    {
-        if (_coolDowns.Count == 0) return;
-
-        float dt = Time.deltaTime;
-        // 复制键集合以便在遍历中修改字典的值
-        var keys = new List<string>(_coolDowns.Keys);
-        foreach (var key in keys)
-        {
-            if (_coolDowns[key] > 0)
-                _coolDowns[key] -= dt;
-        }
-    }
-
-    // ---------------- UI 辅助（热键 Ability） ----------------
-
-    public AbilityConfig GetSkillAbility(int index)
-    {
-        var ids = PlayerConfig?.SkillAbilityIds;
-        if (ids == null || index < 0 || index >= ids.Count) return null;
-        return GetAbility(ids[index]);
-    }
-
-    /// <summary>技能 Ability 剩余冷却的归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
-    public float GetSkillAbilityCoolDownRatio(int index)
-    {
-        AbilityConfig ability = GetSkillAbility(index);
-        if (ability == null || ability.CoolDown <= 0) return 0;
-        return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
-    }
-
-    /// <summary>终极技 Ability，供 UI 查询</summary>
-    public AbilityConfig GetUltimateAbility()
-    {
-        string id = PlayerConfig?.UltimateAbilityId;
-        return string.IsNullOrEmpty(id) ? null : GetAbility(id);
-    }
-
-    /// <summary>终极技剩余冷却归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
-    public float GetUltimateCoolDownRatio()
-    {
-        AbilityConfig ability = GetUltimateAbility();
-        if (ability == null || ability.CoolDown <= 0) return 0;
-        return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
-    }
-
     // ---------------- 主循环与输入 ----------------
 
     private void Update()
     {
         StateMachine.Update();
-        UpdateCoolDowns();
+        UpdateComboWindow();
+
+        // 信号球激活：任何状态下均可使用（按键 1~8 → 位置 0~7）
+        for (int i = 0; i < MaxSignalOrbs; i++)
+        {
+            if (InputManager.Instance.OrbActivatePressed(i))
+            {
+                TryConsumeSignalOrb(i);
+            }
+        }
 
         if (CanAction)
             ProcessInput();
     }
 
     /// <summary>
-    /// 集中处理通用输入（终极技 → 热键 Ability → 攻击 → 闪避 → 移动）。
-    /// 角色专属热键（如按键4的 SpSkill）委托给 Module。
+    /// 集中处理通用输入（终极技 → 攻击 → 闪避 → 移动）。
+    /// 信号球激活在 Update 中统一处理，不受 CanAction 限制。
+    /// 旧版技能热键 1/2/3/4 已全部移除，改为信号球系统。
     /// </summary>
     private void ProcessInput()
     {
@@ -240,10 +288,6 @@ public class PlayerController : CharacterBase
                 ActivateAbilityById(ultimateId);
             return;
         }
-
-        // 热键 Ability（1/2/3/4）次优先
-        if (CheckSkillAbilityInput())
-            return;
 
         // 普通攻击 —— 唯一沿用 / 推进连招索引的入口
         if (InputManager.Instance.AttackPressed)
@@ -275,28 +319,6 @@ public class PlayerController : CharacterBase
         }
     }
 
-    /// <summary>
-    /// 检测技能 Ability 输入。
-    /// 按键 1/2/3 走 SkillAbilityIds 常规路径；
-    /// 按键 4 委托给 Module（如 LuciaModule 处理剑气消耗与 SpSkill）。
-    /// </summary>
-    private bool CheckSkillAbilityInput()
-    {
-        var ids = PlayerConfig?.SkillAbilityIds;
-        if (ids == null) return false;
-
-        // 按键 4 → 交由 Module 处理（不存在则跳过）
-        if (InputManager.Instance.SkillPressed(3))
-            return TryHandleModuleSkillKey(3);
-
-        for (int i = 0; i < ids.Count; i++)
-        {
-            if (InputManager.Instance.SkillPressed(i))
-                return ActivateAbilityById(ids[i]);
-        }
-        return false;
-    }
-
     private void LoadPlayerConfig()
     {
         string path = Path.Combine(Application.dataPath, "Config", "1001.json");
@@ -316,8 +338,6 @@ public class PlayerController : CharacterBase
         StateMachine.SwitchState(state);
     }
 
-    // ---------------- 输入方向与旋转 ----------------
-
     /// <summary>获取键盘输入对应的世界空间方向（基于摄像机朝向）</summary>
     public Vector3 GetInputDirection()
     {
@@ -333,4 +353,24 @@ public class PlayerController : CharacterBase
         if (targetDirection.sqrMagnitude < 0.001f) return;
         transform.rotation = Quaternion.LookRotation(targetDirection);
     }
+
+    // ================ Module 钩子兼容（保留接口，被移除的 SpSkill 不受影响） ================
+
+    /// <summary>Ability 进行中每帧的 Module 预输入处理（已弃用，保留空调用）</summary>
+    public void NotifyModuleAbilityUpdate(float timer, float exitTime)
+    {
+        if (Module != null) Module.OnAbilityUpdate(timer, exitTime);
+    }
+
+    /// <summary>ExitTime 尝试激活 Module 的缓冲技能（已弃用，始终返回 false）</summary>
+    public bool TryConsumeModuleBufferedSkill() => false;
+
+    /// <summary>ExitTime 无预输入时通知 Module 重置专属状态（已弃用）</summary>
+    public void NotifyModuleAbilityEnd()
+    {
+        if (Module != null) Module.OnAbilityExitNoBuffer();
+    }
+
+    /// <summary>旧版热键 4 输入交由 Module 处理（已弃用，始终返回 false）</summary>
+    public bool TryHandleModuleSkillKey(int index) => false;
 }

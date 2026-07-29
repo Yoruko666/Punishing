@@ -8,9 +8,6 @@ public class PlayerConfig
     /// <summary>普通攻击连招链，按 ComboIndex 顺序排列的 Ability Id</summary>
     public List<string> ComboAbilityIds;
 
-    /// <summary>数字键 1/2/3/4 对应的 Ability Id</summary>
-    public List<string> SkillAbilityIds;
-
     /// <summary>前向闪避 Ability Id</summary>
     public string DodgeForwardId;
 

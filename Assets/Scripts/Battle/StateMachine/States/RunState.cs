@@ -83,6 +83,7 @@ public class RunState : StateBase
 
     private void RotateTowards(Vector3 targetDirection)
     {
+        if (targetDirection.sqrMagnitude < 0.001f) return;
         Quaternion currentRotation = Quaternion.LookRotation(Owner.transform.forward);
         Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
         Owner.transform.rotation = Quaternion.RotateTowards(currentRotation, targetRotation, 720 * Time.deltaTime);

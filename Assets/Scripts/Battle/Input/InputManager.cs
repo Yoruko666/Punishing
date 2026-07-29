@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// 其它系统一律通过本类读取输入，避免直接依赖具体设备或旧版 Input API。
 ///
 /// - 持续值：MoveInput / LookInput
-/// - 帧触发：AttackPressed / DodgePressed / UltimatePressed / SkillPressed(index)
+/// - 帧触发：AttackPressed / DodgePressed / UltimatePressed / OrbActivatePressed(index)
 /// </summary>
 public class InputManager : SingletonMonoBehaviour<InputManager>
 {
@@ -28,11 +28,11 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
     /// <summary>本帧是否按下终极技键（Q / 手柄北键）</summary>
     public bool UltimatePressed => _ultimate != null && _ultimate.WasPressedThisFrame();
 
-    /// <summary>本帧是否按下第 index 个技能键（0~3 对应数字键 1/2/3/4）</summary>
-    public bool SkillPressed(int index)
+    /// <summary>本帧是否按下第 index 个信号球激活键（0~7 对应按键 1~8）</summary>
+    public bool OrbActivatePressed(int index)
     {
-        if (_skills == null || index < 0 || index >= _skills.Length) return false;
-        return _skills[index].WasPressedThisFrame();
+        if (_orbKeys == null || index < 0 || index >= _orbKeys.Length) return false;
+        return _orbKeys[index].WasPressedThisFrame();
     }
 
     /// <summary>是否存在有效移动输入（用于跑步状态判定）</summary>
@@ -46,7 +46,7 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
     private InputAction _attack;
     private InputAction _dodge;
     private InputAction _ultimate;
-    private InputAction[] _skills;
+    private InputAction[] _orbKeys;
 
     protected override void OnAwake()
     {
@@ -81,9 +81,9 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
         _look.AddBinding("<Mouse>/delta");
         _look.AddBinding("<Gamepad>/rightStick");
 
-        // 攻击：鼠标左键 / 手柄西键（X / □）
+        // 攻击：G键 / 手柄西键（X / □）
         _attack = _map.AddAction("Attack", InputActionType.Button);
-        _attack.AddBinding("<Mouse>/leftButton");
+        _attack.AddBinding("<Keyboard>/g");
         _attack.AddBinding("<Gamepad>/buttonWest");
 
         // 闪避：LeftShift / 手柄东键（B / ○）
@@ -96,14 +96,14 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
         _ultimate.AddBinding("<Keyboard>/q");
         _ultimate.AddBinding("<Gamepad>/buttonNorth");
 
-        // 技能 1~4：数字键 1/2/3/4（可按需追加手柄绑定）
-        string[] keys = { "1", "2", "3", "4" };
-        _skills = new InputAction[keys.Length];
-        for (int i = 0; i < keys.Length; i++)
+        // 信号球激活键：数字键 1~8（位置从左到右 1~8，右端为 8）
+        string[] orbKeys = { "1", "2", "3", "4", "5", "6", "7", "8" };
+        _orbKeys = new InputAction[orbKeys.Length];
+        for (int i = 0; i < orbKeys.Length; i++)
         {
-            InputAction skill = _map.AddAction($"Skill{i + 1}", InputActionType.Button);
-            skill.AddBinding($"<Keyboard>/{keys[i]}");
-            _skills[i] = skill;
+            InputAction orbAction = _map.AddAction($"Orb{i + 1}", InputActionType.Button);
+            orbAction.AddBinding($"<Keyboard>/{orbKeys[i]}");
+            _orbKeys[i] = orbAction;
         }
     }
 }

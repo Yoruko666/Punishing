@@ -14,6 +14,7 @@ public class AbilityState : StateBase
     private int effectIndex;
     private int soundIndex;
     private bool bufferedCombo;
+    private int _matchCount;
 
     public AbilityState(PlayerController owner) : base(owner)
     {
@@ -29,14 +30,16 @@ public class AbilityState : StateBase
             return;
         }
 
+        // 读取当前信号球消数
+        _matchCount = Owner.CurrentMatchCount;
+
         Owner.PlayAnim(currentAbility.AnimName);
         timer = 0;
         effectIndex = 0;
         soundIndex = 0;
         bufferedCombo = false;
 
-        if (currentAbility.CoolDown > 0)
-            Owner.StartAbilityCoolDown(currentAbility.Id);
+        Debug.Log($"[AbilityState] 释放 {currentAbility.Id} ({_matchCount}消)");
 
         // 应用「进入即触发」的效果（如 ComboEffect 修改连招索引）
         if (currentAbility.AbilityEffects != null)
@@ -65,24 +68,16 @@ public class AbilityState : StateBase
                 bufferedCombo = true;
         }
 
-        // 角色专属预输入（如按键4 的 SpSkill 缓冲），通过 Owner 内部消化
-        Owner.NotifyModuleAbilityUpdate(timer, currentAbility.ExitTime);
-
         // ExitTime 已过 → 开放动作
-        // 优先级：Module 专属预输入 > 普攻预输入 > 中断归零
         if (timer > currentAbility.ExitTime)
         {
-            if (Owner.TryConsumeModuleBufferedSkill())
-                return;
-
             if (bufferedCombo)
             {
                 Owner.ActivateComboAttack();
                 return;
             }
-            // 无预输入 → 连招中断 + Module 状态重置
+            // 无预输入 → 连招中断
             Owner.ResetCombo();
-            Owner.NotifyModuleAbilityEnd();
             Owner.CanAction = true;
         }
 

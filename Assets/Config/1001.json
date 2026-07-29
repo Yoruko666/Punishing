@@ -1,6 +1,5 @@
 {
   "ComboAbilityIds": ["Attack1", "Attack2", "Attack3", "Attack4", "Attack5", "Attack6"],
-  "SkillAbilityIds": ["Skill1", "Skill2", "Skill3"],
   "DodgeForwardId": "DodgeForward",
   "DodgeBackwardId": "DodgeBackward",
   "UltimateAbilityId": "UltimateSkill",
@@ -82,16 +81,15 @@
     {
       "Id": "Skill1",
       "AnimName": "Skill1",
-      "AnimTime": 3.2,
-      "ExitTime": 0.8,
-      "CoolDown": 5.0,
-      "DamageMultiplier": 2.0,
+      "AnimTime": 3.033,
+      "ExitTime": 1.4,
+      "DamageMultiplier": 3.0,
       "SoundEffectList": [
-        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
       ]
     },
     {
@@ -99,7 +97,6 @@
       "AnimName": "Skill2",
       "AnimTime": 3.33,
       "ExitTime": 1.0,
-      "CoolDown": 3.0,
       "DamageMultiplier": 1.5,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
@@ -112,16 +109,15 @@
     {
       "Id": "Skill3",
       "AnimName": "Skill3",
-      "AnimTime": 3.033,
-      "ExitTime": 1.4,
-      "CoolDown": 8.0,
-      "DamageMultiplier": 3.0,
+      "AnimTime": 3.2,
+      "ExitTime": 0.8,
+      "DamageMultiplier": 2.0,
       "SoundEffectList": [
-        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
       ]
     },
     {
@@ -129,7 +125,6 @@
       "AnimName": "DashForward",
       "AnimTime": 1.1,
       "ExitTime": 0.5,
-      "CoolDown": 0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
       ],
@@ -143,7 +138,6 @@
       "AnimName": "DashBackward",
       "AnimTime": 1.267,
       "ExitTime": 0.5,
-      "CoolDown": 0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
       ],
@@ -204,7 +198,6 @@
       "AnimName": "UltimateSkill",
       "AnimTime": 6.833,
       "ExitTime": 6.833,
-      "CoolDown": 0,
       "DamageMultiplier": 5.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_ultimate" },
