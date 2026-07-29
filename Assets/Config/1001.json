@@ -1,6 +1,6 @@
 {
   "ComboAbilityIds": ["Attack1", "Attack2", "Attack3", "Attack4", "Attack5", "Attack6"],
-  "HotkeyAbilityIds": ["Skill1", "Skill2", "Skill3"],
+  "SkillAbilityIds": ["Skill1", "Skill2", "Skill3"],
   "DodgeForwardId": "DodgeForward",
   "DodgeBackwardId": "DodgeBackward",
   "Abilities": [
@@ -69,7 +69,6 @@
       "AnimName": "Attack6",
       "ExitTime": 0.7,
       "AnimTime": 3.1,
-      "ListenAttackFromStart": true,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack06" }
       ],
@@ -125,7 +124,6 @@
       "AnimTime": 1.1,
       "ExitTime": 0.5,
       "CoolDown": 0,
-      "ListenAttackFromStart": true,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
       ],
@@ -140,7 +138,6 @@
       "AnimTime": 1.267,
       "ExitTime": 0.5,
       "CoolDown": 0,
-      "ListenAttackFromStart": true,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
       ],

@@ -16,7 +16,7 @@ public class SkillPanel : MonoBehaviour
     {
         for(int i = 0; i < SkillSlots.Count; i++)
         {
-            float alpha = Owner.GetHotkeyAbilityCoolDownRatio(i);
+            float alpha = Owner.GetSkillAbilityCoolDownRatio(i);
             SkillSlots[i].transform.Find("Mask").GetComponent<Image>().fillAmount = alpha;
         }
     }

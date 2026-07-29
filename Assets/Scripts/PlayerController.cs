@@ -134,17 +134,17 @@ public class PlayerController : CharacterBase
 
     // ---------------- UI 辅助（热键 Ability） ----------------
 
-    public AbilityConfig GetHotkeyAbility(int index)
+    public AbilityConfig GetSkillAbility(int index)
     {
-        var ids = PlayerConfig?.HotkeyAbilityIds;
+        var ids = PlayerConfig?.SkillAbilityIds;
         if (ids == null || index < 0 || index >= ids.Count) return null;
         return GetAbility(ids[index]);
     }
 
-    /// <summary>热键 Ability 剩余冷却的归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
-    public float GetHotkeyAbilityCoolDownRatio(int index)
+    /// <summary>技能 Ability 剩余冷却的归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
+    public float GetSkillAbilityCoolDownRatio(int index)
     {
-        AbilityConfig ability = GetHotkeyAbility(index);
+        AbilityConfig ability = GetSkillAbility(index);
         if (ability == null || ability.CoolDown <= 0) return 0;
         return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
     }
@@ -164,18 +164,18 @@ public class PlayerController : CharacterBase
     private void ProcessInput()
     {
         // 热键 Ability（1/2/3/4）优先
-        if (CheckHotkeyAbilityInput())
+        if (CheckSkillAbilityInput())
             return;
 
         // 普通攻击
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (InputManager.Instance.AttackPressed)
         {
             ActivateComboAttack();
             return;
         }
 
         // 闪避：有移动输入时转向该方向并前冲，无输入时后撤
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (InputManager.Instance.DodgePressed)
         {
             Vector3 dir = GetInputDirection();
             if (dir != Vector3.zero)
@@ -197,23 +197,15 @@ public class PlayerController : CharacterBase
         }
     }
 
-    /// <summary>检测热键 Ability 输入，返回是否触发</summary>
-    private bool CheckHotkeyAbilityInput()
+    /// <summary>检测技能 Ability 输入，返回是否触发</summary>
+    private bool CheckSkillAbilityInput()
     {
-        var ids = PlayerConfig?.HotkeyAbilityIds;
+        var ids = PlayerConfig?.SkillAbilityIds;
         if (ids == null) return false;
 
         for (int i = 0; i < ids.Count; i++)
         {
-            KeyCode key = i switch
-            {
-                0 => KeyCode.Alpha1,
-                1 => KeyCode.Alpha2,
-                2 => KeyCode.Alpha3,
-                3 => KeyCode.Alpha4,
-                _ => KeyCode.None
-            };
-            if (key != KeyCode.None && Input.GetKeyDown(key))
+            if (InputManager.Instance.SkillPressed(i))
                 return ActivateAbilityById(ids[i]);
         }
         return false;

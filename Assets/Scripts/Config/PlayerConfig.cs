@@ -9,7 +9,7 @@ public class PlayerConfig
     public List<string> ComboAbilityIds;
 
     /// <summary>数字键 1/2/3/4 对应的 Ability Id</summary>
-    public List<string> HotkeyAbilityIds;
+    public List<string> SkillAbilityIds;
 
     /// <summary>前向闪避 Ability Id</summary>
     public string DodgeForwardId;

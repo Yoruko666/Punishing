@@ -65,26 +65,25 @@ public class AbilityState : StateBase
                 effect?.OnUpdate(Owner, timer);
         }
 
-        // 持续监听攻击键：
-        // 普通招式从 ExitTime 前 0.3s 起监听；ListenAttackFromStart 的招式（闪避）整个过程都监听
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        // 持续监听攻击键：从 ExitTime 前 0.3s 起预输入缓冲
+        if (InputManager.Instance.AttackPressed)
         {
-            if (currentAbility.ListenAttackFromStart || timer > currentAbility.ExitTime - 0.3f)
+            if (timer > currentAbility.ExitTime - 0.3f)
                 bufferedCombo = true;
         }
 
-        if (timer > currentAbility.ExitTime)
+        // ExitTime 已过且有攻击缓冲 → 连招链内 Ability 立即派生下一段
+        if (timer > currentAbility.ExitTime && bufferedCombo && IsComboAbility)
         {
-            if (bufferedCombo && (IsComboAbility || currentAbility.ListenAttackFromStart))
-            {
-                Owner.ActivateComboAttack();
-                return;
-            }
-            Owner.CanAction = true;
-            Owner.ComboIndex = 0;
+            Owner.ActivateComboAttack();
+            return;
         }
 
-        // 动画结束 → 有缓冲则派生（闪避等非链内 Ability 的预输入在此释放），否则重置连招回 Idle
+        // ExitTime 已过 → 开放动作
+        if (timer > currentAbility.ExitTime)
+            Owner.CanAction = true;
+
+        // 动画结束 → 有缓冲则派生（非连招 Ability 的预输入在此释放），否则重置连招回 Idle
         if (timer > currentAbility.AnimTime)
         {
             if (bufferedCombo)
@@ -122,7 +121,6 @@ public class AbilityState : StateBase
 
     public override void OnExit()
     {
-        // 收尾清理（如关闭无敌）
         if (currentAbility?.AbilityEffects != null)
         {
             foreach (var effect in currentAbility.AbilityEffects)

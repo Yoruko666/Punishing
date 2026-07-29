@@ -14,17 +14,8 @@ public class AbilityConfig
     /// <summary>动画总时长，超过后回到 Idle</summary>
     public float AnimTime;
 
-
-
-    /// <summary>超出此时间点后，派生窗口关闭且开放后续输入。也是最晚预输入截止点。</summary>
+    /// <summary>超出此时间点后开放后续输入。也是最晚预输入截止点。</summary>
     public float ExitTime;
-
-    /// <summary>
-    /// 为 true 时：整个 Ability 过程（timer 从 0 起）都监听攻击预输入，
-    /// 一旦在 ExitTime 前缓冲了攻击，到达 ExitTime 即释放普攻（与普攻链派发时机一致）。
-    /// 用于闪避取消接普攻等场景。
-    /// </summary>
-    public bool ListenAttackFromStart;
 
     /// <summary>冷却（秒），0 表示无冷却（普攻/闪避）</summary>
     public float CoolDown;
