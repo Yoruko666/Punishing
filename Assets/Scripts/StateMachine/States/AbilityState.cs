@@ -14,10 +14,6 @@ public class AbilityState : StateBase
     private int soundIndex;
     private bool bufferedCombo;
 
-    /// <summary>当前 Ability 是否为普攻连招链的一员（链内 Ability 在 ExitTime 即派生，链外持缓冲到动画结束）</summary>
-    private bool IsComboAbility =>
-        currentAbility != null && Owner.PlayerConfig?.ComboAbilityIds?.Contains(currentAbility.Id) == true;
-
     public AbilityState(PlayerController owner) : base(owner)
     {
     }
@@ -31,10 +27,6 @@ public class AbilityState : StateBase
             Owner.SwitchState(PlayerState.Idle);
             return;
         }
-
-        // 非连招 Ability（技能、闪避等）打断连招链，重置索引
-        if (!IsComboAbility)
-            Owner.ComboIndex = 0;
 
         Owner.PlayAnim(currentAbility.AnimName);
         timer = 0;
@@ -72,26 +64,24 @@ public class AbilityState : StateBase
                 bufferedCombo = true;
         }
 
-        // ExitTime 已过且有攻击缓冲 → 连招链内 Ability 立即派生下一段
-        if (timer > currentAbility.ExitTime && bufferedCombo && IsComboAbility)
-        {
-            Owner.ActivateComboAttack();
-            return;
-        }
-
         // ExitTime 已过 → 开放动作
         if (timer > currentAbility.ExitTime)
-            Owner.CanAction = true;
-
-        // 动画结束 → 有缓冲则派生（非连招 Ability 的预输入在此释放），否则重置连招回 Idle
-        if (timer > currentAbility.AnimTime)
         {
+            // 任意 Ability 都支持预输入续连：有缓冲则按当前 ComboIndex 派生下一段
+            // （闪避/技能可用 ComboEffect 预设段位，预输入派生时被读到）
             if (bufferedCombo)
             {
                 Owner.ActivateComboAttack();
                 return;
             }
-            Owner.ComboIndex = 0;
+            // 无预输入 → 连招中断，归零
+            Owner.ResetCombo();
+            Owner.CanAction = true;
+        }
+
+        // 动画结束 → 回 Idle（预输入已在 ExitTime 处派生，此处不再处理）
+        if (timer > currentAbility.AnimTime)
+        {
             Owner.SwitchState(PlayerState.Idle);
             return;
         }

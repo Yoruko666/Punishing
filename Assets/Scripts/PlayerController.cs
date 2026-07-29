@@ -86,6 +86,12 @@ public class PlayerController : CharacterBase
         return ActivateAbilityById(combo[idx]);
     }
 
+    /// <summary>打断并重置普攻连招链。任何“非连招攻击”的动作（移动、闪避、技能、自然中断）都应调用</summary>
+    public void ResetCombo()
+    {
+        ComboIndex = 0;
+    }
+
     /// <summary>设置连招索引（由 ComboEffect 调用）</summary>
     public void ApplyCombo(int value)
     {
@@ -160,14 +166,18 @@ public class PlayerController : CharacterBase
             ProcessInput();
     }
 
-    /// <summary>集中处理通用输入（热键 Ability → 攻击 → 闪避 → 移动）</summary>
+    /// <summary>
+    /// 集中处理通用输入（热键 Ability → 攻击 → 闪避 → 移动）。
+    /// 连招归零统一由 AbilityState 在 ExitTime 之后完成；打断动作只可能发生在 ExitTime 之后，
+    /// 此时 ComboIndex 已为 0，故此处无需再显式重置。
+    /// </summary>
     private void ProcessInput()
     {
         // 热键 Ability（1/2/3/4）优先
         if (CheckSkillAbilityInput())
             return;
 
-        // 普通攻击
+        // 普通攻击 —— 唯一沿用 / 推进连招索引的入口
         if (InputManager.Instance.AttackPressed)
         {
             ActivateComboAttack();
