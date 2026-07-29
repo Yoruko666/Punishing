@@ -20,8 +20,12 @@ public class PlayerController : CharacterBase
     /// <summary>当前待释放/正在释放的 Ability，由 AbilityState 在 OnEnter 读取</summary>
     public AbilityConfig PendingAbility { get; private set; }
 
+    /// <summary>角色专属模块（如 LuciaModule），没有则为 null</summary>
+    public CharacterModule Module { get; private set; }
+
     private readonly Dictionary<string, AbilityConfig> _abilityMap = new();
     private readonly Dictionary<string, float> _coolDowns = new();
+    private readonly AttributeSet _attributeSet = new();
 
     protected override void Start()
     {
@@ -29,6 +33,10 @@ public class PlayerController : CharacterBase
 
         LoadPlayerConfig();
         BuildAbilityMap();
+
+        // 自动发现挂载在本体上的角色专属模块
+        Module = GetComponent<CharacterModule>();
+        if (Module != null) Module.Initialize(this);
 
         StateMachine = new StateMachine();
         StateMachine.RegisterState(PlayerState.Idle, new IdleState(this));
@@ -108,6 +116,43 @@ public class PlayerController : CharacterBase
         ComboIndex = value;
     }
 
+    // ---------------- 属性（AttributeSet） ----------------
+
+    /// <summary>
+    /// 通用属性修改入口，供 ModifyAttributeEffect 调用。
+    /// 钳制/特殊逻辑委托给 Module.ApplyAttributeClamp。
+    /// </summary>
+    public void ModifyAttribute(string attributeName, float delta)
+    {
+        _attributeSet.EnsureAttribute(attributeName);
+        float newVal = _attributeSet.GetAttribute(attributeName) + delta;
+        newVal = Module != null ? Module.ApplyAttributeClamp(attributeName, newVal) : newVal;
+        _attributeSet.SetBaseAttribute(attributeName, newVal);
+    }
+
+    /// <summary>获取任意属性的当前值</summary>
+    public float GetAttribute(string attributeName) => _attributeSet.GetAttribute(attributeName);
+
+    // ---------------- Module 委托（内部消化，不暴露给外部） ----------------
+
+    /// <summary>Ability 进行中每帧的 Module 预输入处理</summary>
+    public void NotifyModuleAbilityUpdate(float timer, float exitTime)
+    {
+        if (Module != null) Module.OnAbilityUpdate(timer, exitTime);
+    }
+
+    /// <summary>在 ExitTime 尝试激活 Module 的缓冲技能（如 SpSkill），成败均在此刻决定</summary>
+    public bool TryConsumeModuleBufferedSkill() => Module != null && Module.TryActivateBufferedSkill();
+
+    /// <summary>ExitTime 无预输入时通知 Module 重置专属状态</summary>
+    public void NotifyModuleAbilityEnd()
+    {
+        if (Module != null) Module.OnAbilityExitNoBuffer();
+    }
+
+    /// <summary>热键 4 输入时交由 Module 处理，返回是否已消耗</summary>
+    public bool TryHandleModuleSkillKey(int index) => Module != null && Module.HandleSkillKey(index);
+
     // ---------------- 冷却 ----------------
 
     public void StartAbilityCoolDown(string id)
@@ -155,6 +200,21 @@ public class PlayerController : CharacterBase
         return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
     }
 
+    /// <summary>终极技 Ability，供 UI 查询</summary>
+    public AbilityConfig GetUltimateAbility()
+    {
+        string id = PlayerConfig?.UltimateAbilityId;
+        return string.IsNullOrEmpty(id) ? null : GetAbility(id);
+    }
+
+    /// <summary>终极技剩余冷却归一化比例 [0,1]，供 UI 遮罩 fillAmount 使用</summary>
+    public float GetUltimateCoolDownRatio()
+    {
+        AbilityConfig ability = GetUltimateAbility();
+        if (ability == null || ability.CoolDown <= 0) return 0;
+        return GetCoolDownRemaining(ability.Id) / ability.CoolDown;
+    }
+
     // ---------------- 主循环与输入 ----------------
 
     private void Update()
@@ -167,13 +227,21 @@ public class PlayerController : CharacterBase
     }
 
     /// <summary>
-    /// 集中处理通用输入（热键 Ability → 攻击 → 闪避 → 移动）。
-    /// 连招归零统一由 AbilityState 在 ExitTime 之后完成；打断动作只可能发生在 ExitTime 之后，
-    /// 此时 ComboIndex 已为 0，故此处无需再显式重置。
+    /// 集中处理通用输入（终极技 → 热键 Ability → 攻击 → 闪避 → 移动）。
+    /// 角色专属热键（如按键4的 SpSkill）委托给 Module。
     /// </summary>
     private void ProcessInput()
     {
-        // 热键 Ability（1/2/3/4）优先
+        // 终极技（Q 键）优先于一切
+        if (InputManager.Instance.UltimatePressed)
+        {
+            var ultimateId = PlayerConfig?.UltimateAbilityId;
+            if (!string.IsNullOrEmpty(ultimateId))
+                ActivateAbilityById(ultimateId);
+            return;
+        }
+
+        // 热键 Ability（1/2/3/4）次优先
         if (CheckSkillAbilityInput())
             return;
 
@@ -207,11 +275,19 @@ public class PlayerController : CharacterBase
         }
     }
 
-    /// <summary>检测技能 Ability 输入，返回是否触发</summary>
+    /// <summary>
+    /// 检测技能 Ability 输入。
+    /// 按键 1/2/3 走 SkillAbilityIds 常规路径；
+    /// 按键 4 委托给 Module（如 LuciaModule 处理剑气消耗与 SpSkill）。
+    /// </summary>
     private bool CheckSkillAbilityInput()
     {
         var ids = PlayerConfig?.SkillAbilityIds;
         if (ids == null) return false;
+
+        // 按键 4 → 交由 Module 处理（不存在则跳过）
+        if (InputManager.Instance.SkillPressed(3))
+            return TryHandleModuleSkillKey(3);
 
         for (int i = 0; i < ids.Count; i++)
         {

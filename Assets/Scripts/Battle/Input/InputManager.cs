@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// 其它系统一律通过本类读取输入，避免直接依赖具体设备或旧版 Input API。
 ///
 /// - 持续值：MoveInput / LookInput
-/// - 帧触发：AttackPressed / DodgePressed / SkillPressed(index)
+/// - 帧触发：AttackPressed / DodgePressed / UltimatePressed / SkillPressed(index)
 /// </summary>
 public class InputManager : SingletonMonoBehaviour<InputManager>
 {
@@ -24,6 +24,9 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
 
     /// <summary>本帧是否按下闪避键（LeftShift / 手柄东键）</summary>
     public bool DodgePressed => _dodge != null && _dodge.WasPressedThisFrame();
+
+    /// <summary>本帧是否按下终极技键（Q / 手柄北键）</summary>
+    public bool UltimatePressed => _ultimate != null && _ultimate.WasPressedThisFrame();
 
     /// <summary>本帧是否按下第 index 个技能键（0~3 对应数字键 1/2/3/4）</summary>
     public bool SkillPressed(int index)
@@ -42,6 +45,7 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
     private InputAction _look;
     private InputAction _attack;
     private InputAction _dodge;
+    private InputAction _ultimate;
     private InputAction[] _skills;
 
     protected override void OnAwake()
@@ -86,6 +90,11 @@ public class InputManager : SingletonMonoBehaviour<InputManager>
         _dodge = _map.AddAction("Dodge", InputActionType.Button);
         _dodge.AddBinding("<Keyboard>/leftShift");
         _dodge.AddBinding("<Gamepad>/buttonEast");
+
+        // 终极技：Q / 手柄北键（Y / △）
+        _ultimate = _map.AddAction("Ultimate", InputActionType.Button);
+        _ultimate.AddBinding("<Keyboard>/q");
+        _ultimate.AddBinding("<Gamepad>/buttonNorth");
 
         // 技能 1~4：数字键 1/2/3/4（可按需追加手柄绑定）
         string[] keys = { "1", "2", "3", "4" };

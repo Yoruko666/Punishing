@@ -45,3 +45,6 @@ Desktop.ini
 # Addressables
 # ===========================
 [Ll]ibrary/com.unity.addressables/
+
+.vsconfig
+UserSettings/

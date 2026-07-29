@@ -25,6 +25,7 @@ public class AbilityEffectConverter : JsonConverter
             "Invincible" => new InvincibleEffect(),
             "Move" => new MoveEffect(),
             "Damage" => new DamageEffect(),
+            "ModifyAttribute" => new ModifyAttributeEffect(),
             _ => null
         };
 

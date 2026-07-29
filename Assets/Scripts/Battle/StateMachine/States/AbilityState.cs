@@ -5,6 +5,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 /// <summary>
 /// 统一 Ability 状态：普通攻击、技能、闪避都由它驱动。
 /// 按时间线播放动画/特效/音效，执行 AbilityEffect，并处理派生 / 普攻缓冲。
+/// 角色专属逻辑（如 Lucía 的 SpSkill 预输入）通过 Owner 内部消化，本类不感知。
 /// </summary>
 public class AbilityState : StateBase
 {
@@ -64,18 +65,24 @@ public class AbilityState : StateBase
                 bufferedCombo = true;
         }
 
+        // 角色专属预输入（如按键4 的 SpSkill 缓冲），通过 Owner 内部消化
+        Owner.NotifyModuleAbilityUpdate(timer, currentAbility.ExitTime);
+
         // ExitTime 已过 → 开放动作
+        // 优先级：Module 专属预输入 > 普攻预输入 > 中断归零
         if (timer > currentAbility.ExitTime)
         {
-            // 任意 Ability 都支持预输入续连：有缓冲则按当前 ComboIndex 派生下一段
-            // （闪避/技能可用 ComboEffect 预设段位，预输入派生时被读到）
+            if (Owner.TryConsumeModuleBufferedSkill())
+                return;
+
             if (bufferedCombo)
             {
                 Owner.ActivateComboAttack();
                 return;
             }
-            // 无预输入 → 连招中断，归零
+            // 无预输入 → 连招中断 + Module 状态重置
             Owner.ResetCombo();
+            Owner.NotifyModuleAbilityEnd();
             Owner.CanAction = true;
         }
 

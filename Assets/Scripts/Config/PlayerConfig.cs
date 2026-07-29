@@ -16,4 +16,7 @@ public class PlayerConfig
 
     /// <summary>后向闪避 Ability Id</summary>
     public string DodgeBackwardId;
+
+    /// <summary>终极技 Ability Id（按 Q 释放）</summary>
+    public string UltimateAbilityId;
 }

@@ -3,6 +3,7 @@
   "SkillAbilityIds": ["Skill1", "Skill2", "Skill3"],
   "DodgeForwardId": "DodgeForward",
   "DodgeBackwardId": "DodgeBackward",
+  "UltimateAbilityId": "UltimateSkill",
   "Abilities": [
     {
       "Id": "Attack1",
@@ -37,7 +38,8 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack03" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 3 }
+        { "Type": "SetCombo", "Value": 3 },
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
       ]
     },
     {
@@ -61,7 +63,8 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack05" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
       ]
     },
     {
@@ -87,7 +90,8 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
       ]
     },
     {
@@ -101,7 +105,8 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
       ]
     },
     {
@@ -115,7 +120,8 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
       ]
     },
     {
@@ -143,6 +149,71 @@
       ],
       "AbilityEffects": [
         { "Type": "Invincible", "StartTime": 0, "EndTime": 0.4 }
+      ]
+    },
+    {
+      "Id": "SpSkill1",
+      "AnimName": "SpSkill1",
+      "AnimTime": 1.467,
+      "ExitTime": 0.333,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack41" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
+      ]
+    },
+    {
+      "Id": "SpSkill2",
+      "AnimName": "SpSkill2",
+      "AnimTime": 2.033,
+      "ExitTime": 0.333,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack42" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
+      ]
+    },
+    {
+      "Id": "SpSkill3",
+      "AnimName": "SpSkill3",
+      "AnimTime": 2.267,
+      "ExitTime": 0.333,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack43" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
+      ]
+    },
+    {
+      "Id": "SpSkill4",
+      "AnimName": "SpSkill4",
+      "AnimTime": 2.067,
+      "ExitTime": 0.333,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack44" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 }
+      ]
+    },
+    {
+      "Id": "UltimateSkill",
+      "AnimName": "UltimateSkill",
+      "AnimTime": 6.833,
+      "ExitTime": 6.833,
+      "CoolDown": 0,
+      "DamageMultiplier": 5.0,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_ultimate" },
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_ultimate_buff" },
+        { "ExecTime": 0, "SoundName": "c_luciark3_skill_ultimate_weapon" }
+      ],
+      "AbilityEffects": [
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "Invincible", "StartTime": 0, "EndTime": 6.833 }
       ]
     }
   ]
