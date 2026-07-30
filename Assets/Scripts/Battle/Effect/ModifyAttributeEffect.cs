@@ -4,7 +4,6 @@
 /// 无需为每个属性创建专属 AbilityEffect 子类。
 ///
 /// 配置示例：
-///   { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
 ///   { "Type": "ModifyAttribute", "AttributeName": "Rage", "Value": 10 }
 ///   { "Type": "ModifyAttribute", "AttributeName": "Health", "Value": -5 }
 /// </summary>

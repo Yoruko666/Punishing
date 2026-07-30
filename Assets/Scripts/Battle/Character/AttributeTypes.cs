@@ -12,6 +12,4 @@ public static class AttributeTypes
     public const string MaxHealth = "MaxHealth";
     public const string Attack = "Attack";
     public const string Defence = "Defence";
-
-    public const string LuciaSwordEnergy = "LuciaSwordEnergy";
 }

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-public class PlayerController : CharacterBase
+public class PlayerController : CharacterBase, IDamageable
 {
     public StateMachine StateMachine;
     public CharacterController CharacterController;
@@ -100,6 +100,8 @@ public class PlayerController : CharacterBase
         Module = GetComponent<CharacterModule>();
         if (Module != null) Module.Initialize(this);
 
+        InitAttributes();
+
         StateMachine = new StateMachine();
         StateMachine.RegisterState(PlayerState.Idle, new IdleState(this));
         StateMachine.RegisterState(PlayerState.Run, new RunState(this));
@@ -107,6 +109,13 @@ public class PlayerController : CharacterBase
         StateMachine.SwitchState(PlayerState.Idle);
 
         CharacterController = GetComponent<CharacterController>();
+    }
+
+    /// <summary>初始化基础属性（HP、MaxHP 等）</summary>
+    private void InitAttributes()
+    {
+        _attributeSet.EnsureAttribute("MaxHP", 500f);
+        _attributeSet.EnsureAttribute("HP", _attributeSet.GetAttribute("MaxHP"));
     }
 
     private void BuildAbilityMap()
@@ -368,7 +377,7 @@ public class PlayerController : CharacterBase
         }
     }
 
-    // ---------------- 属性（AttributeSet） ----------------
+    // ---------------- 属性与受击（AttributeSet / IDamageable） ----------------
 
     /// <summary>
     /// 通用属性修改入口，供 ModifyAttributeEffect 调用。
@@ -384,6 +393,19 @@ public class PlayerController : CharacterBase
 
     /// <summary>获取任意属性的当前值</summary>
     public float GetAttribute(string attributeName) => _attributeSet.GetAttribute(attributeName);
+
+    /// <summary>实现 IDamageable：受到伤害。由敌方 DamageEffect 调用。</summary>
+    public void TakeDamage(float amount)
+    {
+        if (IsInvincible || amount <= 0f) return;
+
+        float hp = _attributeSet.GetAttribute("HP");
+        hp = Mathf.Max(0f, hp - amount);
+        _attributeSet.SetBaseAttribute("HP", hp);
+
+        float maxHp = _attributeSet.GetAttribute("MaxHP");
+        Debug.Log($"{name} 受到 {amount} 点伤害，剩余 HP {hp}/{maxHp}");
+    }
 
     // ---------------- 主循环与输入 ----------------
 
@@ -485,4 +507,32 @@ public class PlayerController : CharacterBase
         if (targetDirection.sqrMagnitude < 0.001f) return;
         transform.rotation = Quaternion.LookRotation(targetDirection);
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        if (PendingAbility?.AbilityEffects == null) return;
+
+        foreach (var effect in PendingAbility.AbilityEffects)
+        {
+            if (effect is DamageEffect damage && damage.DetectionShape != null && damage.LastExecutedTime > 0f
+                && Time.time - damage.LastExecutedTime <= 0.1f)
+            {
+                Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
+                Vector3 worldPos = transform.TransformPoint(damage.DetectionShape.Offset);
+
+                if (damage.DetectionShape is SphereDetection sphere)
+                {
+                    Gizmos.DrawSphere(worldPos, sphere.Radius);
+                }
+                else if (damage.DetectionShape is BoxDetection box)
+                {
+                    Gizmos.matrix = transform.localToWorldMatrix;
+                    Gizmos.DrawCube(damage.DetectionShape.Offset, box.HalfExtents * 2f);
+                    Gizmos.matrix = Matrix4x4.identity;
+                }
+            }
+        }
+    }
+#endif
 }

@@ -15,11 +15,13 @@
       "AnimName": "Attack1",
       "ExitTime": 0.35,
       "AnimTime": 2.8,
+      "DamageMultiplier": 1.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack01" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 1 }
+        { "Type": "SetCombo", "Value": 1 },
+        { "Type": "Damage", "ExecTime": 0.2, "BaseDamage": 20, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.0, "Offset": { "x": 0, "y": 0, "z": 1.5 } } }
       ]
     },
     {
@@ -27,11 +29,14 @@
       "AnimName": "Attack2",
       "ExitTime": 0.52,
       "AnimTime": 4.167,
+      "DamageMultiplier": 1.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack02" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 2 }
+        { "Type": "SetCombo", "Value": 2 },
+        { "Type": "Damage", "ExecTime": 0.2, "BaseDamage": 20, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.0, "Offset": { "x": 0, "y": 0, "z": 1.5 } } },
+        { "Type": "Damage", "ExecTime": 0.333, "BaseDamage": 20, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.0, "Offset": { "x": 0, "y": 0, "z": 1.5 } } }
       ]
     },
     {
@@ -39,12 +44,15 @@
       "AnimName": "Attack3",
       "ExitTime": 1.0,
       "AnimTime": 3.5,
+      "DamageMultiplier": 1.5,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack03" }
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 3 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
+        { "Type": "Damage", "ExecTime": 0.2, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.5, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.8, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } }
       ]
     },
     {
@@ -52,11 +60,17 @@
       "AnimName": "Attack4",
       "ExitTime": 0.8,
       "AnimTime": 3.733,
+      "DamageMultiplier": 1.5,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack04" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 4 }
+        { "Type": "SetCombo", "Value": 4 },
+        { "Type": "Damage", "ExecTime": 0.1, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.3, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.5, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.7, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } },
+        { "Type": "Damage", "ExecTime": 0.9, "BaseDamage": 25, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2.0 } } }
       ]
     },
     {
@@ -64,12 +78,15 @@
       "AnimName": "Attack5",
       "ExitTime": 1.5,
       "AnimTime": 4.067,
+      "DamageMultiplier": 2.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack05" }
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
+        { "Type": "Damage", "ExecTime": 0.3, "BaseDamage": 30, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } },
+        { "Type": "Damage", "ExecTime": 0.5, "BaseDamage": 30, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } },
+        { "Type": "Damage", "ExecTime": 0.7, "BaseDamage": 30, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } }
       ]
     },
     {
@@ -77,11 +94,13 @@
       "AnimName": "Attack6",
       "ExitTime": 0.7,
       "AnimTime": 3.1,
+      "DamageMultiplier": 2.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack06" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 3 }
+        { "Type": "SetCombo", "Value": 3 },
+        { "Type": "Damage", "ExecTime": 0.4, "BaseDamage": 35, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } }
       ]
     },
     {
@@ -94,8 +113,7 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
+        { "Type": "SetCombo", "Value": 0 }
       ]
     },
     {
@@ -108,8 +126,7 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 1 }
+        { "Type": "SetCombo", "Value": 0 }
       ]
     },
     {
@@ -122,8 +139,7 @@
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 },
-        { "Type": "ModifyAttribute", "AttributeName": "LuciaSwordEnergy", "Value": 2 }
+        { "Type": "SetCombo", "Value": 0 }
       ]
     },
     {
@@ -162,7 +178,7 @@
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "Damage", "ExecTime": 0.2, "Radius": 2.5, "CenterOffset": { "x": 0, "y": 0, "z": 2 } }
+        { "Type": "Damage", "ExecTime": 0.2, "BaseDamage": 50, "DetectionShape": { "ShapeType": "Sphere", "Radius": 2.5, "Offset": { "x": 0, "y": 0, "z": 2 } } }
       ]
     },
     {
@@ -176,7 +192,7 @@
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.0, "CenterOffset": { "x": 0, "y": 0, "z": 2.5 } }
+        { "Type": "Damage", "ExecTime": 0.3, "BaseDamage": 50, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } }
       ]
     },
     {
@@ -190,7 +206,7 @@
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.0, "CenterOffset": { "x": 0, "y": 0, "z": 2.5 } }
+        { "Type": "Damage", "ExecTime": 0.3, "BaseDamage": 50, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.0, "Offset": { "x": 0, "y": 0, "z": 2.5 } } }
       ]
     },
     {
@@ -204,7 +220,7 @@
       ],
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
-        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.5, "CenterOffset": { "x": 0, "y": 0, "z": 3 } }
+        { "Type": "Damage", "ExecTime": 0.3, "BaseDamage": 50, "DetectionShape": { "ShapeType": "Sphere", "Radius": 3.5, "Offset": { "x": 0, "y": 0, "z": 3 } } }
       ]
     },
     {

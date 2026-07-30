@@ -1,18 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// Lucia 深红之渊专属模块 —— Blade Will（剑意）状态核心逻辑。
-///
-/// 流程：
-///   1. 三消蓝 → _bladeWillReady = true
-///   2. 下一次三消任意色 → 进入 Blade Will 状态：
-///      - 后撤（触发 BladeWillEntry 能力）
-///      - 剩余球全转白色 + 额外 2 颗白色球
-///      - 持续 5 秒
-///   3. Blade Will 中：攻击产白色球，白色球仅能单消，每消一颗循环 SpSkill1~4
-///   4. Blade Will 结束：剩余白色球随机转回红/黄/蓝
-/// </summary>
 public class LuciaModule : CharacterModule
 {
     // ================ Blade Will 状态 ================
@@ -43,7 +31,6 @@ public class LuciaModule : CharacterModule
         _spSkillCycleIndex = 0;
         StopCoroutineSafe(ref _bladeWillCoroutine);
         StopCoroutineSafe(ref _bladeWillReadyCoroutine);
-        Debug.Log("[LuciaModule] 初始化完成");
     }
 
     // ================ 信号球系统 ================
