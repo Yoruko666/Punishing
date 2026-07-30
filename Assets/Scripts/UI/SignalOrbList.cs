@@ -1,37 +1,111 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine.UI;
 
 public class SignalOrbList : MonoBehaviour
 {
     public GameObject OrbPrefab;
+    private TextMeshProUGUI OrbNum;
 
-    private float OrbSpacing = 20f;
-
-    private float MoveSpeed = 6000f;
-
-    private float SpawnOffset = 400f;
+    private const float OrbSpacing = 20f;
+    private const float MoveSpeed = 6000f;
+    private const float SpawnOffset = 400f;
+    private const int PoolSize = 8;
 
     public PlayerController Owner;
 
     private class OrbView
     {
-        public int Id;     // 绑定的球唯一 Id（同色球也彼此不同）
+        public int Id;
         public PlayerController.SignalOrbType Type;
         public GameObject Go;
         public RectTransform Rect;
         public float TargetX;
+        public int Key;
+        public TextMeshProUGUI KeyText;
     }
 
-    private readonly List<OrbView> _views = new(8);
+    /// <summary>当前可见的视图列表（只包含激活的球）。</summary>
+    private readonly List<OrbView> _views = new(PoolSize);
+
+    /// <summary>对象池：预生成的空闲 OrbView。</summary>
+    private readonly Stack<OrbView> _pool = new(PoolSize);
 
     private readonly Dictionary<string, Sprite> _spriteCache = new();
 
-    private int _createCount;
+    /// <summary>数据列表中左上角（最旧可见）的起始索引。稳定窗口，不被新球挤出。</summary>
+    private int _visibleStart;
+
     private float _orbWidth;
     private PlayerController _subscribed;
+
+    private void Awake()
+    {
+        OrbNum = transform.Find("OrbNum").GetComponent<TextMeshProUGUI>();
+
+        // 预生成 8 颗球入池
+        for (int i = 0; i < PoolSize; i++)
+        {
+            OrbView view = CreatePooledView();
+            view.Go.SetActive(false);
+            _pool.Push(view);
+        }
+    }
+
+    /// <summary>创建一颗池中球的 GameObject（一次性设置，之后复用）。</summary>
+    private OrbView CreatePooledView()
+    {
+        GameObject go = Instantiate(OrbPrefab, transform);
+        go.name = $"Orb_Pooled_{_pool.Count}";
+
+        var view = new OrbView
+        {
+            Go = go,
+            Rect = go.GetComponent<RectTransform>(),
+            KeyText = go.transform.Find("Key/Text").GetComponent<TextMeshProUGUI>(),
+        };
+
+        if (view.Rect != null && _orbWidth <= 0f)
+            _orbWidth = view.Rect.sizeDelta.x;
+
+        Button btn = go.GetComponent<Button>();
+        if (btn != null)
+        {
+            OrbView captured = view;
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => OnOrbClicked(captured));
+        }
+
+        return view;
+    }
+
+    /// <summary>从池中取出一个 OrbView，按 orb 数据配置并放置到初始滑入位置。</summary>
+    private OrbView AcquireFromPool(PlayerController.SignalOrb orb, int index)
+    {
+        OrbView view = _pool.Pop();
+        view.Id = orb.Id;
+        view.Type = orb.Type;
+        view.Go.SetActive(true);
+
+        ApplyIcon(view);
+
+        float step = _orbWidth + OrbSpacing;
+        float spawnX = -step * index - SpawnOffset;
+        view.TargetX = spawnX;
+        SetX(view.Rect, spawnX);
+
+        return view;
+    }
+
+    /// <summary>将 OrbView 归还池中（停用 GameObject）。</summary>
+    private void ReleaseToPool(OrbView view)
+    {
+        view.Go.SetActive(false);
+        _pool.Push(view);
+    }
 
     private void Update()
     {
@@ -50,6 +124,17 @@ public class SignalOrbList : MonoBehaviour
     private void OnDestroy()
     {
         Unsubscribe();
+
+        // 销毁池中所有 GameObject
+        foreach (var view in _pool)
+            if (view.Go != null) Destroy(view.Go);
+
+        // 销毁当前视图中可能遗留的（虽然理论上 Rebuild 已归还）
+        foreach (var view in _views)
+            if (view.Go != null) Destroy(view.Go);
+
+        _pool.Clear();
+        _views.Clear();
     }
 
     // ---------------- 事件订阅 ----------------
@@ -66,6 +151,7 @@ public class SignalOrbList : MonoBehaviour
         {
             Owner.OnOrbAdded += OnOwnerOrbAdded;
             Owner.OnOrbsRemoved += OnOwnerOrbsRemoved;
+            Owner.OnOrbsReset += OnOwnerOrbsReset;
             RebuildFromData();   // 订阅前可能已有球，按当前数据全量重建一次
         }
     }
@@ -76,89 +162,108 @@ public class SignalOrbList : MonoBehaviour
         {
             _subscribed.OnOrbAdded -= OnOwnerOrbAdded;
             _subscribed.OnOrbsRemoved -= OnOwnerOrbsRemoved;
+            _subscribed.OnOrbsReset -= OnOwnerOrbsReset;
             _subscribed = null;
         }
     }
 
-    /// <summary>按当前数据全量重建视图（用于首次订阅时对齐已有球）。</summary>
+    /// <summary>全量刷新（Blade Will 转球/退出时调用），重置可见窗口。</summary>
+    private void OnOwnerOrbsReset()
+    {
+        _visibleStart = 0;
+        RebuildFromData();
+    }
+
+    /// <summary>按当前数据重建视图，只显示最多 8 颗球。始终显示最旧的球，超过 8 颗的新球在数据列表中等候（不挤掉可见球）。</summary>
     private void RebuildFromData()
     {
+        var orbs = Owner.GetSignalOrbs();
+
+        // ---- 维护可见窗口 ----
+        // 始终从最旧的球开始显示（_visibleStart = 0），超过 PoolSize 的球在数据列表中等候
+        _visibleStart = 0;
+
+        int start = _visibleStart;
+        int end = Mathf.Min(start + PoolSize, orbs.Count);
+
+        // 收集新可见数据的 Id 集合
+        HashSet<int> newIds = new HashSet<int>();
+        for (int i = start; i < end; i++)
+            newIds.Add(orbs[i].Id);
+
+        // 1) 归还 Id 不再可见的视图
         for (int i = _views.Count - 1; i >= 0; i--)
         {
-            if (_views[i].Go != null) Destroy(_views[i].Go);
+            if (!newIds.Contains(_views[i].Id))
+            {
+                ReleaseToPool(_views[i]);
+                _views.RemoveAt(i);
+            }
         }
+
+        // 2) 存活视图按 Id 建立映射
+        Dictionary<int, OrbView> idToView = new Dictionary<int, OrbView>();
+        foreach (var view in _views)
+            idToView[view.Id] = view;
         _views.Clear();
 
-        var orbs = Owner.GetSignalOrbs();
-        for (int i = 0; i < orbs.Count; i++)
-            _views.Add(CreateView(orbs[i]));
+        // 3) 按新数据顺序构建视图列表
+        for (int i = start; i < end; i++)
+        {
+            var orb = orbs[i];
+            if (idToView.TryGetValue(orb.Id, out var existingView))
+            {
+                existingView.Type = orb.Type;
+                ApplyIcon(existingView);
+                _views.Add(existingView);
+                idToView.Remove(orb.Id);
+            }
+            else
+            {
+                int vi = _views.Count;
+                _views.Add(AcquireFromPool(orb, vi));
+            }
+        }
+
+        // 4) 归还剩余不匹配的视图
+        foreach (var view in idToView.Values)
+            ReleaseToPool(view);
+
+        RefreshSignalNum();
+    }
+
+    /// <summary>更新信号球计数文本为 "当前数量/16"。</summary>
+    private void RefreshSignalNum()
+    {
+        if (OrbNum == null || Owner == null) return;
+        OrbNum.text = $"{Owner.GetSignalOrbs().Count}/{Owner.GetMaxDataSignalOrbs()}";
     }
 
     // ---------------- 数据层事件回调 ----------------
 
-    /// <summary>获得一颗球：追加一个视图。新球从左侧滑入。</summary>
+    /// <summary>获得一颗球：全量重建（数据与视图不再一一对应，简化处理）。</summary>
     private void OnOwnerOrbAdded(PlayerController.SignalOrb orb)
     {
-        _views.Add(CreateView(orb));
+        RebuildFromData();
     }
 
-    /// <summary>消掉一批球：删除数据下标区间 [startListIndex, startListIndex + count) 对应的视图。</summary>
+    /// <summary>消掉一批球：全量重建。</summary>
     private void OnOwnerOrbsRemoved(int startListIndex, int count)
     {
-        int end = Mathf.Min(startListIndex + count, _views.Count);
-        for (int i = end - 1; i >= startListIndex && i >= 0; i--)
-        {
-            if (_views[i].Go != null) Destroy(_views[i].Go);
-            _views.RemoveAt(i);
-        }
+        RebuildFromData();
     }
 
-    // ---------------- 视图创建与布局 ----------------
-
-    /// <summary>创建一个信号球视图，初始置于容器最左侧之外，等待滑入。</summary>
-    private OrbView CreateView(PlayerController.SignalOrb orb)
-    {
-        GameObject go = Instantiate(OrbPrefab, transform);
-        go.name = $"Orb_{_createCount++}";
-
-        var view = new OrbView
-        {
-            Id = orb.Id,
-            Type = orb.Type,
-            Go = go,
-            Rect = go.GetComponent<RectTransform>(),
-        };
-
-        // 记录布局基准球宽（首个球创建时）。锚点/pivot 由预制体设为右侧中间 (1, 0.5)，
-        // 因此 anchoredPosition.x = 0 表示球贴容器右边缘，向左为负。
-        if (view.Rect != null && _orbWidth <= 0f)
-            _orbWidth = view.Rect.sizeDelta.x;
-
-        // 绑定点击消除
-        Button btn = go.GetComponent<Button>();
-        if (btn != null)
-        {
-            OrbView captured = view;
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => OnOrbClicked(captured));
-        }
-
-        ApplyIcon(view);
-
-        // 新球出现在最左侧之外，随后由 AnimateViews 向目标滑入。
-        // 此处只需一个足够靠左的初始位置，真正的目标 X 由 RefreshTargets 计算。
-        float step = _orbWidth + OrbSpacing;
-        float spawnX = -step * _views.Count - SpawnOffset;
-        view.TargetX = spawnX;
-        SetX(view.Rect, spawnX);
-
-        return view;
-    }
+    // ---------------- 视图布局与动画 ----------------
 
     private void RefreshTargets()
     {
         for (int i = 0; i < _views.Count; i++)
+        {
             _views[i].TargetX = -(_orbWidth + OrbSpacing) * i;
+            _views[i].Key = PoolSize - i; // 左=槽1, 右=槽8, 从右往左生成（最右=8，向左递减到1）
+            if (_views[i].KeyText != null)
+                _views[i].KeyText.text = _views[i].Key.ToString();
+        }
     }
 
     /// <summary>每帧把每个球朝目标位置平滑移动。</summary>
@@ -243,16 +348,16 @@ public class SignalOrbList : MonoBehaviour
 
     // ---------------- 点击消除 ----------------
 
-    /// <summary>点击某个球时，换算其当前可见位置对应的槽位索引再交给数据层消除。</summary>
+    /// <summary>点击某个球时，按数据索引直接消除（绕过 slot 换算，兼容等候区偏移）。</summary>
     private void OnOrbClicked(OrbView view)
     {
         if (Owner == null) return;
 
-        int index = _views.IndexOf(view);
-        if (index < 0) return;
+        int viewIndex = _views.IndexOf(view);
+        if (viewIndex < 0) return;
 
-        // 数据 index -> 槽位（键 1~8），与 PlayerController.ListIndexToSlot 一致
-        int slot = Owner.ListIndexToSlot(index);
-        Owner.TryConsumeSignalOrb(slot);
+        // viewIndex: 0=最右(最旧), Count-1=最左(最新)
+        int dataIndex = _visibleStart + viewIndex;
+        Owner.TryConsumeSignalOrbByDataIndex(dataIndex);
     }
 }

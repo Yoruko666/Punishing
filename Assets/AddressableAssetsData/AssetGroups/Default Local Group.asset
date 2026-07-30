@@ -72,6 +72,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25c9996655159b9469ddb6d8a2b886b6
+    m_Address: sprite_orb_lucia_bladewill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 35b0e3fff50500648b82e5acedc2d127
     m_Address: c_luciark3_action_win
     m_ReadOnly: 0

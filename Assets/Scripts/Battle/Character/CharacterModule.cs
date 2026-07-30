@@ -14,32 +14,27 @@ public abstract class CharacterModule : MonoBehaviour
     /// <summary>子类在此做初始化（此时 Owner 已可用）</summary>
     public virtual void OnModuleInit() { }
 
-    // ================ Ability 生命周期钩子 ================
+    // ================ 信号球系统钩子 ================
 
     /// <summary>
-    /// 每帧 AbilityState.OnUpdate 时调用，用于角色专属的预输入缓冲。
+    /// 消球时询问 Module 是否替换释放的技能 ID。
+    /// 返回 true 时用 overrideSkillId 替代默认映射，false 走默认（颜色→SkillId）。
     /// </summary>
-    public virtual void OnAbilityUpdate(float timer, float exitTime) { }
+    public virtual bool TryOverrideOrbSkill(PlayerController.SignalOrbType type, int matchCount, out string overrideSkillId)
+    {
+        overrideSkillId = null;
+        return false;
+    }
 
     /// <summary>
-    /// 在 AbilityState 到达 ExitTime 时调用。
-    /// 返回 true 表示已激活一个缓冲技能（后续不再处理普攻预输入/归零）。
+    /// 生成新信号球时，Module 可强制指定颜色。
+    /// 返回 true 表示使用 overrideType，false 走默认随机颜色。
     /// </summary>
-    public virtual bool TryActivateBufferedSkill() => false;
-
-    /// <summary>
-    /// ExitTime 到达且无任何预输入时调用，用于重置角色专属段数/状态。
-    /// </summary>
-    public virtual void OnAbilityExitNoBuffer() { }
-
-    // ================ 输入 ================
-
-    /// <summary>
-    /// 处理角色专属的技能键（如按键 4 的 SpSkill）。
-    /// skillIndex: 0~3 对应 1/2/3/4。
-    /// 返回 true 表示已消耗该输入，PlayerController 不再继续处理后续键。
-    /// </summary>
-    public virtual bool HandleSkillKey(int skillIndex) => false;
+    public virtual bool GetOrbOverride(out PlayerController.SignalOrbType overrideType)
+    {
+        overrideType = PlayerController.SignalOrbType.Red;
+        return false;
+    }
 
     // ================ 属性 ================
 
@@ -49,4 +44,5 @@ public abstract class CharacterModule : MonoBehaviour
     /// 默认直接返回 value（无钳制）。
     /// </summary>
     public virtual float ApplyAttributeClamp(string attributeName, float value) => value;
+
 }

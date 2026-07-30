@@ -22,9 +22,6 @@ public class AbilityConfig
 
     public float DamageMultiplier;
 
-    /// <summary>信号球贴图（Addressables key），供信号球 UI 显示。为空则回退到纯色显示。</summary>
-    public string OrbSprite;
-
     /// <summary>视觉特效时间线</summary>
     public List<SkillEffect> EffectList;
 

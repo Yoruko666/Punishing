@@ -5,7 +5,6 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 /// <summary>
 /// 统一 Ability 状态：普通攻击、技能、闪避都由它驱动。
 /// 按时间线播放动画/特效/音效，执行 AbilityEffect，并处理派生 / 普攻缓冲。
-/// 角色专属逻辑（如 Lucía 的 SpSkill 预输入）通过 Owner 内部消化，本类不感知。
 /// </summary>
 public class AbilityState : StateBase
 {
@@ -30,8 +29,8 @@ public class AbilityState : StateBase
             return;
         }
 
-        // 读取当前信号球消数
-        _matchCount = Owner.CurrentMatchCount;
+        // 读取当前信号球消数（消费式读取，非消球技能读到 0）
+        _matchCount = Owner.ConsumePendingMatchCount();
 
         Owner.PlayAnim(currentAbility.AnimName, 0f);
         timer = 0;

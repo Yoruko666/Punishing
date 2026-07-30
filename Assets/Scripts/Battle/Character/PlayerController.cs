@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
 
 public class PlayerController : CharacterBase
 {
@@ -16,8 +15,15 @@ public class PlayerController : CharacterBase
     public bool CanAction = true;
     public int ComboIndex = 0;
 
-    /// <summary>当前信号球消数（1/2/3），供技能系统读取</summary>
-    public int CurrentMatchCount { get; set; } = 1;
+    /// <summary>待消费的信号球消数（1/2/3），通过 ConsumePendingMatchCount() 一次性读取并清空。</summary>
+    private int _pendingMatchCount;
+    /// <summary>读取并清空待消费的消球数。非消球技能（普攻/闪避/大招）永远读到 0。</summary>
+    public int ConsumePendingMatchCount()
+    {
+        int val = _pendingMatchCount;
+        _pendingMatchCount = 0;
+        return val;
+    }
 
     /// <summary>无敌标志，由 InvincibleEffect 控制，供受击/伤害系统查询</summary>
     public bool IsInvincible = false;
@@ -30,7 +36,7 @@ public class PlayerController : CharacterBase
 
     // ================ 信号球系统 ================
 
-    public enum SignalOrbType { Red, Yellow, Blue }
+    public enum SignalOrbType { Red, Yellow, Blue, White }
 
     /// <summary>信号球数据：Id 为唯一身份（同色球也彼此不同），Type 为颜色。</summary>
     public struct SignalOrb
@@ -39,9 +45,11 @@ public class PlayerController : CharacterBase
         public SignalOrbType Type;
     }
 
-    private readonly List<SignalOrb> _signalOrbs = new(8);
+    private readonly List<SignalOrb> _signalOrbs = new(16);
     private readonly (int, int)[] _SignalOrbGroup = new (int, int)[MaxSignalOrbs];
-    private const int MaxSignalOrbs = 8;
+    private const int MaxSignalOrbs = 16;
+    /// <summary>UI 只显示该数量个信号球，键盘也只响应 1-8 键</summary>
+    private const int MaxVisibleSignalOrbs = 8;
 
     /// <summary>自增计数器，为每颗新球分配唯一 Id。</summary>
     private int _nextOrbId;
@@ -52,6 +60,9 @@ public class PlayerController : CharacterBase
     /// <summary>消除一批球：参数为(起始列表下标, 数量)，与 RemoveRange 一致，供视图层删除对应视图。</summary>
     public event Action<int, int> OnOrbsRemoved;
 
+    /// <summary>信号球全量刷新（如 Blade Will 转球/退出），视图层应销毁全部并重建。</summary>
+    public event Action OnOrbsReset;
+
     /// <summary>连击计数与窗口计时，用于信号球生成</summary>
     private int _comboAttackCount;
     private float _comboAttackTimer;
@@ -61,6 +72,9 @@ public class PlayerController : CharacterBase
     /// <summary>信号球对应技能 ID（红/黄/蓝 → Skill1/Skill2/Skill3）</summary>
     private static readonly string[] OrbSkillIds = { "Skill1", "Skill2", "Skill3" };
 
+    /// <summary>信号球贴图缓存（SignalOrbType 枚举索引 → Addressables key），启动时从 PlayerConfig.OrbSprites 填充。</summary>
+    private readonly string[] _orbSprites = new string[4];
+
     private readonly Dictionary<string, AbilityConfig> _abilityMap = new();
     private readonly AttributeSet _attributeSet = new();
 
@@ -69,6 +83,17 @@ public class PlayerController : CharacterBase
         base.Start();
 
         LoadPlayerConfig();
+        // 缓存信号球贴图
+        var orbDict = PlayerConfig?.OrbSprites;
+        if (orbDict != null)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var type = (SignalOrbType)i;
+                if (orbDict.TryGetValue(type.ToString(), out var spriteKey) && !string.IsNullOrEmpty(spriteKey))
+                    _orbSprites[i] = spriteKey;
+            }
+        }
         BuildAbilityMap();
 
         // 自动发现挂载在本体上的角色专属模块
@@ -171,7 +196,7 @@ public class PlayerController : CharacterBase
         }
     }
 
-    // 更新信号球分组
+    // 更新信号球分组（白色球仅能单消，红/黄/蓝最多三消）
     private void UpdateSignalOrbGroup()
     {
         for (int i = 0; i < _signalOrbs.Count; i++)
@@ -181,7 +206,8 @@ public class PlayerController : CharacterBase
             int groupCount = 0;
             if (_SignalOrbGroup[i] != (-1, -1)) 
                 continue;
-            for(int j = 0; j < 3; j++)
+            int maxGroup = _signalOrbs[i].Type == SignalOrbType.White ? 1 : 3;
+            for(int j = 0; j < maxGroup; j++)
             {
                 if (i + j >= _signalOrbs.Count || _signalOrbs[i].Type != _signalOrbs[i + j].Type)
                     break;
@@ -192,58 +218,141 @@ public class PlayerController : CharacterBase
         }
     }
 
-    // 产生信号球
+    // 产生信号球（默认随机颜色，Module 可强制指定颜色）
     private void GenerateSignalOrb()
     {
         if (_signalOrbs.Count >= MaxSignalOrbs) return;
+
+        SignalOrbType type;
+        if (Module != null && Module.GetOrbOverride(out SignalOrbType overrideType))
+            type = overrideType;
+        else
+            type = (SignalOrbType)UnityEngine.Random.Range(0, 3);
+
         var orb = new SignalOrb
         {
             Id = _nextOrbId++,
-            Type = (SignalOrbType)UnityEngine.Random.Range(0, 3),
+            Type = type,
         };
         _signalOrbs.Add(orb);
         UpdateSignalOrbGroup();
-        OnOrbAdded?.Invoke(orb);   // 通知视图层追加视图
+        OnOrbAdded?.Invoke(orb);
     }
 
-    // 消除信号球
+    /// <summary>强制生成指定颜色的球（Blade Will 状态添加白球等）</summary>
+    public void GenerateSignalOrb(SignalOrbType forcedType)
+    {
+        if (_signalOrbs.Count >= MaxSignalOrbs) return;
+        var orb = new SignalOrb { Id = _nextOrbId++, Type = forcedType };
+        _signalOrbs.Add(orb);
+        UpdateSignalOrbGroup();
+        OnOrbAdded?.Invoke(orb);
+    }
+
+    // 消除信号球（Module 可拦截并返回自定义 skillId）
+    private int GetDataListIndex(int slotIndex)
+    {
+        // slotIndex: 0=键1(最右/编号8/最旧), MaxVisible-1=键8(最左/编号1/最新可见)
+        // 可见窗口固定从列表索引 0 开始，9-16 为等候区不响应键位
+        return  8 - slotIndex - 1;
+    }
+
     public bool TryConsumeSignalOrb(int slotIndex)
     {
         if (!CanAction) return false;
-        if (slotIndex < 0 || slotIndex >= MaxSignalOrbs) return false;
-        int listIndex = MaxSignalOrbs - 1 - slotIndex;
+        if (slotIndex < 0 || slotIndex >= MaxVisibleSignalOrbs) return false;
+        int listIndex = GetDataListIndex(slotIndex);
         if (listIndex < 0 || listIndex >= _signalOrbs.Count) return false;
-
-        SignalOrbType type = _signalOrbs[listIndex].Type;
 
         int headIndex = _SignalOrbGroup[listIndex].Item1;
         int matchCount = _SignalOrbGroup[listIndex].Item2;
+        SignalOrbType type = _signalOrbs[headIndex].Type;
         _signalOrbs.RemoveRange(headIndex, matchCount);
-        OnOrbsRemoved?.Invoke(headIndex, matchCount);   // 通知视图层删除对应视图
+        OnOrbsRemoved?.Invoke(headIndex, matchCount);
 
-        CurrentMatchCount = matchCount;
+        _pendingMatchCount = matchCount;
         string matchPrefix = matchCount == 3 ? "三消" : matchCount == 2 ? "二消" : "单消";
+        UpdateSignalOrbGroup();
+
+        // Module 可拦截消球行为（Blade Will 白球→SpSkill、三消蓝标记、三消后 Blade Will 入场等）
+        if (Module != null && Module.TryOverrideOrbSkill(type, matchCount, out string overrideSkillId))
+        {
+            Debug.Log($"[信号球] {matchPrefix} 键{slotIndex + 1} ({type}, → {overrideSkillId})");
+            return ActivateAbilityById(overrideSkillId);
+        }
+
         string skillId = OrbSkillIds[(int)type];
         Debug.Log($"[信号球] {matchPrefix} 键{slotIndex + 1} ({type}, {skillId})");
+        return ActivateAbilityById(skillId);
+    }
+
+    /// <summary>按数据列表索引直接消除（UI 等候区场景下绕过 slot 换算）。</summary>
+    public bool TryConsumeSignalOrbByDataIndex(int listIndex)
+    {
+        if (!CanAction) return false;
+        if (listIndex < 0 || listIndex >= _signalOrbs.Count) return false;
+
+        int headIndex = _SignalOrbGroup[listIndex].Item1;
+        int matchCount = _SignalOrbGroup[listIndex].Item2;
+        SignalOrbType type = _signalOrbs[headIndex].Type;
+        _signalOrbs.RemoveRange(headIndex, matchCount);
+        OnOrbsRemoved?.Invoke(headIndex, matchCount);
+
+        _pendingMatchCount = matchCount;
+        string matchPrefix = matchCount == 3 ? "三消" : matchCount == 2 ? "二消" : "单消";
         UpdateSignalOrbGroup();
+
+        if (Module != null && Module.TryOverrideOrbSkill(type, matchCount, out string overrideSkillId))
+        {
+            Debug.Log($"[信号球] {matchPrefix} (data[{listIndex}], {type}, → {overrideSkillId})");
+            return ActivateAbilityById(overrideSkillId);
+        }
+
+        string skillId = OrbSkillIds[(int)type];
+        Debug.Log($"[信号球] {matchPrefix} (data[{listIndex}], {type}, {skillId})");
         return ActivateAbilityById(skillId);
     }
 
     /// <summary>获取当前信号球列表（供 UI 使用），索引 0 = 最早（右侧/键 8）</summary>
     public List<SignalOrb> GetSignalOrbs() => _signalOrbs;
 
-    /// <summary>获取指定信号球类型对应技能的贴图 key（Addressables），无配置返回 null</summary>
-    public string GetOrbSprite(SignalOrbType type)
+    /// <summary>获取指定信号球类型的贴图 Addressables key，由 PlayerConfig.OrbSprites 配置，启动时缓存。</summary>
+    public string GetOrbSprite(SignalOrbType type) => _orbSprites[(int)type];
+
+    /// <summary>获取信号球最大数量（UI 显示用，= 可见球数量）</summary>
+    public int GetMaxSignalOrbs() => MaxVisibleSignalOrbs;
+
+    /// <summary>获取信号球最大数据容量</summary>
+    public int GetMaxDataSignalOrbs() => MaxSignalOrbs;
+
+    // ---------------- 信号球底层操作 API（供 Module 使用） ----------------
+
+    /// <summary>当前信号球总数。</summary>
+    public int OrbCount => _signalOrbs.Count;
+
+    /// <summary>读取指定数据索引位置的信号球颜色。</summary>
+    public SignalOrbType GetOrbType(int dataIndex) => _signalOrbs[dataIndex].Type;
+
+    /// <summary>修改指定数据索引位置的信号球颜色。</summary>
+    public void SetOrbType(int dataIndex, SignalOrbType newType)
     {
-        var ability = GetAbility(OrbSkillIds[(int)type]);
-        return string.IsNullOrEmpty(ability?.OrbSprite) ? null : ability.OrbSprite;
+        var orb = _signalOrbs[dataIndex];
+        orb.Type = newType;
+        _signalOrbs[dataIndex] = orb;
     }
 
-    /// <summary>获取信号球最大数量</summary>
-    public int GetMaxSignalOrbs() => MaxSignalOrbs;
+    /// <summary>清空所有信号球（触发 OnOrbsReset），供 Module 全量重建使用。</summary>
+    public void ClearOrbs()
+    {
+        _signalOrbs.Clear();
+        OnOrbsReset?.Invoke();
+    }
 
-    /// <summary>信号球列表索引 → 视觉位置（0=左/键1, 7=右/键8）</summary>
-    public int ListIndexToSlot(int listIndex) => MaxSignalOrbs - 1 - listIndex;
+    /// <summary>通知 UI 全量刷新（Module 批量修改球颜色后调用）。</summary>
+    public void NotifyOrbsReset() => OnOrbsReset?.Invoke();
+
+    /// <summary>重建信号球分组缓存（Module 批量操作后调用）。</summary>
+    public void RebuildOrbGroups() => UpdateSignalOrbGroup();
 
     /// <summary>信号球生成窗口跟踪，每帧更新超时重置</summary>
     private void UpdateComboWindow()
@@ -283,8 +392,8 @@ public class PlayerController : CharacterBase
         StateMachine.Update();
         UpdateComboWindow();
 
-        // 信号球激活：任何状态下均可使用（按键 1~8 → 位置 0~7）
-        for (int i = 0; i < MaxSignalOrbs; i++)
+        // 信号球激活：任何状态下均可使用（按键 1~8）
+        for (int i = 0; i < MaxVisibleSignalOrbs; i++)
         {
             if (InputManager.Instance.OrbActivatePressed(i))
             {
@@ -376,24 +485,4 @@ public class PlayerController : CharacterBase
         if (targetDirection.sqrMagnitude < 0.001f) return;
         transform.rotation = Quaternion.LookRotation(targetDirection);
     }
-
-    // ================ Module 钩子兼容（保留接口，被移除的 SpSkill 不受影响） ================
-
-    /// <summary>Ability 进行中每帧的 Module 预输入处理（已弃用，保留空调用）</summary>
-    public void NotifyModuleAbilityUpdate(float timer, float exitTime)
-    {
-        if (Module != null) Module.OnAbilityUpdate(timer, exitTime);
-    }
-
-    /// <summary>ExitTime 尝试激活 Module 的缓冲技能（已弃用，始终返回 false）</summary>
-    public bool TryConsumeModuleBufferedSkill() => false;
-
-    /// <summary>ExitTime 无预输入时通知 Module 重置专属状态（已弃用）</summary>
-    public void NotifyModuleAbilityEnd()
-    {
-        if (Module != null) Module.OnAbilityExitNoBuffer();
-    }
-
-    /// <summary>旧版热键 4 输入交由 Module 处理（已弃用，始终返回 false）</summary>
-    public bool TryHandleModuleSkillKey(int index) => false;
 }

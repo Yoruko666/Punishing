@@ -16,4 +16,7 @@ public class PlayerConfig
 
     /// <summary>终极技 Ability Id（按 Q 释放）</summary>
     public string UltimateAbilityId;
+
+    /// <summary>信号球贴图配置（Red/Yellow/Blue/White → Addressables key），由 PlayerController 启动时缓存。</summary>
+    public Dictionary<string, string> OrbSprites;
 }

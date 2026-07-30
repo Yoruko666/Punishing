@@ -3,6 +3,12 @@
   "DodgeForwardId": "DodgeForward",
   "DodgeBackwardId": "DodgeBackward",
   "UltimateAbilityId": "UltimateSkill",
+  "OrbSprites": {
+    "Red": "sprite_orb_lucia_red",
+    "Yellow": "sprite_orb_lucia_yellow",
+    "Blue": "sprite_orb_lucia_blue",
+    "White": "sprite_orb_lucia_bladewill"
+  },
   "Abilities": [
     {
       "Id": "Attack1",
@@ -84,7 +90,6 @@
       "AnimTime": 3.033,
       "ExitTime": 1.4,
       "DamageMultiplier": 3.0,
-      "OrbSprite": "sprite_orb_lucia_red",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
       ],
@@ -99,7 +104,6 @@
       "AnimTime": 3.33,
       "ExitTime": 1.0,
       "DamageMultiplier": 1.5,
-      "OrbSprite": "sprite_orb_lucia_yellow",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
       ],
@@ -114,7 +118,6 @@
       "AnimTime": 3.2,
       "ExitTime": 0.8,
       "DamageMultiplier": 2.0,
-      "OrbSprite": "sprite_orb_lucia_blue",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
       ],
@@ -152,48 +155,56 @@
       "Id": "SpSkill1",
       "AnimName": "SpSkill1",
       "AnimTime": 1.467,
-      "ExitTime": 0.333,
+      "ExitTime": 0.3,
+      "DamageMultiplier": 4.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack41" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "Damage", "ExecTime": 0.2, "Radius": 2.5, "CenterOffset": { "x": 0, "y": 0, "z": 2 } }
       ]
     },
     {
       "Id": "SpSkill2",
       "AnimName": "SpSkill2",
       "AnimTime": 2.033,
-      "ExitTime": 0.333,
+      "ExitTime": 0.3,
+      "DamageMultiplier": 5.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack42" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.0, "CenterOffset": { "x": 0, "y": 0, "z": 2.5 } }
       ]
     },
     {
       "Id": "SpSkill3",
       "AnimName": "SpSkill3",
       "AnimTime": 2.267,
-      "ExitTime": 0.333,
+      "ExitTime": 0.3,
+      "DamageMultiplier": 5.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack43" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.0, "CenterOffset": { "x": 0, "y": 0, "z": 2.5 } }
       ]
     },
     {
       "Id": "SpSkill4",
       "AnimName": "SpSkill4",
       "AnimTime": 2.067,
-      "ExitTime": 0.333,
+      "ExitTime": 0.3,
+      "DamageMultiplier": 6.0,
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_atk_attack44" }
       ],
       "AbilityEffects": [
-        { "Type": "SetCombo", "Value": 0 }
+        { "Type": "SetCombo", "Value": 0 },
+        { "Type": "Damage", "ExecTime": 0.3, "Radius": 3.5, "CenterOffset": { "x": 0, "y": 0, "z": 3 } }
       ]
     },
     {
@@ -210,6 +221,18 @@
       "AbilityEffects": [
         { "Type": "SetCombo", "Value": 0 },
         { "Type": "Invincible", "StartTime": 0, "EndTime": 6.833 }
+      ]
+    },
+    {
+      "Id": "BladeWillEntry",
+      "AnimName": "DashBackward",
+      "AnimTime": 1.267,
+      "ExitTime": 0.5,
+      "SoundEffectList": [
+        { "ExecTime": 0, "SoundName": "c_luciark3_action_flash2" }
+      ],
+      "AbilityEffects": [
+        { "Type": "Invincible", "StartTime": 0, "EndTime": 0.4 }
       ]
     }
   ]
