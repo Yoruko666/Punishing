@@ -84,6 +84,7 @@
       "AnimTime": 3.033,
       "ExitTime": 1.4,
       "DamageMultiplier": 3.0,
+      "OrbSprite": "sprite_orb_lucia_red",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack11" }
       ],
@@ -98,6 +99,7 @@
       "AnimTime": 3.33,
       "ExitTime": 1.0,
       "DamageMultiplier": 1.5,
+      "OrbSprite": "sprite_orb_lucia_yellow",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack31" }
       ],
@@ -112,6 +114,7 @@
       "AnimTime": 3.2,
       "ExitTime": 0.8,
       "DamageMultiplier": 2.0,
+      "OrbSprite": "sprite_orb_lucia_blue",
       "SoundEffectList": [
         { "ExecTime": 0, "SoundName": "c_luciark3_skill_attack21" }
       ],

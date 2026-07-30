@@ -33,7 +33,7 @@ public class AbilityState : StateBase
         // 读取当前信号球消数
         _matchCount = Owner.CurrentMatchCount;
 
-        Owner.PlayAnim(currentAbility.AnimName);
+        Owner.PlayAnim(currentAbility.AnimName, 0f);
         timer = 0;
         effectIndex = 0;
         soundIndex = 0;

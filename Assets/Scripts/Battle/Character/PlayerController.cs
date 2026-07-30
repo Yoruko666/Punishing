@@ -1,5 +1,6 @@
 using UnityEngine;
 using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
@@ -31,9 +32,25 @@ public class PlayerController : CharacterBase
 
     public enum SignalOrbType { Red, Yellow, Blue }
 
-    private readonly List<SignalOrbType> _signalOrbs = new(8);
+    /// <summary>信号球数据：Id 为唯一身份（同色球也彼此不同），Type 为颜色。</summary>
+    public struct SignalOrb
+    {
+        public int Id;
+        public SignalOrbType Type;
+    }
+
+    private readonly List<SignalOrb> _signalOrbs = new(8);
     private readonly (int, int)[] _SignalOrbGroup = new (int, int)[MaxSignalOrbs];
     private const int MaxSignalOrbs = 8;
+
+    /// <summary>自增计数器，为每颗新球分配唯一 Id。</summary>
+    private int _nextOrbId;
+
+    /// <summary>获得一颗球：参数为新球（含 Id），供视图层追加视图。</summary>
+    public event Action<SignalOrb> OnOrbAdded;
+
+    /// <summary>消除一批球：参数为(起始列表下标, 数量)，与 RemoveRange 一致，供视图层删除对应视图。</summary>
+    public event Action<int, int> OnOrbsRemoved;
 
     /// <summary>连击计数与窗口计时，用于信号球生成</summary>
     private int _comboAttackCount;
@@ -43,14 +60,6 @@ public class PlayerController : CharacterBase
 
     /// <summary>信号球对应技能 ID（红/黄/蓝 → Skill1/Skill2/Skill3）</summary>
     private static readonly string[] OrbSkillIds = { "Skill1", "Skill2", "Skill3" };
-
-    /// <summary>信号球颜色，供 UI 使用</summary>
-    public static readonly Color[] OrbColors =
-    {
-        new Color(1f, 0.27f, 0.27f), // Red
-        new Color(1f, 0.84f, 0f),    // Yellow
-        new Color(0.27f, 0.53f, 1f)  // Blue
-    };
 
     private readonly Dictionary<string, AbilityConfig> _abilityMap = new();
     private readonly AttributeSet _attributeSet = new();
@@ -174,7 +183,7 @@ public class PlayerController : CharacterBase
                 continue;
             for(int j = 0; j < 3; j++)
             {
-                if (i + j >= _signalOrbs.Count || _signalOrbs[i] != _signalOrbs[i + j])
+                if (i + j >= _signalOrbs.Count || _signalOrbs[i].Type != _signalOrbs[i + j].Type)
                     break;
                 groupCount++;
             }
@@ -187,23 +196,30 @@ public class PlayerController : CharacterBase
     private void GenerateSignalOrb()
     {
         if (_signalOrbs.Count >= MaxSignalOrbs) return;
-        SignalOrbType type = (SignalOrbType)Random.Range(0, 3);
-        _signalOrbs.Add(type); 
+        var orb = new SignalOrb
+        {
+            Id = _nextOrbId++,
+            Type = (SignalOrbType)UnityEngine.Random.Range(0, 3),
+        };
+        _signalOrbs.Add(orb);
         UpdateSignalOrbGroup();
+        OnOrbAdded?.Invoke(orb);   // 通知视图层追加视图
     }
 
     // 消除信号球
     public bool TryConsumeSignalOrb(int slotIndex)
     {
+        if (!CanAction) return false;
         if (slotIndex < 0 || slotIndex >= MaxSignalOrbs) return false;
         int listIndex = MaxSignalOrbs - 1 - slotIndex;
         if (listIndex < 0 || listIndex >= _signalOrbs.Count) return false;
 
-        SignalOrbType type = _signalOrbs[listIndex];
+        SignalOrbType type = _signalOrbs[listIndex].Type;
 
         int headIndex = _SignalOrbGroup[listIndex].Item1;
         int matchCount = _SignalOrbGroup[listIndex].Item2;
         _signalOrbs.RemoveRange(headIndex, matchCount);
+        OnOrbsRemoved?.Invoke(headIndex, matchCount);   // 通知视图层删除对应视图
 
         CurrentMatchCount = matchCount;
         string matchPrefix = matchCount == 3 ? "三消" : matchCount == 2 ? "二消" : "单消";
@@ -214,7 +230,14 @@ public class PlayerController : CharacterBase
     }
 
     /// <summary>获取当前信号球列表（供 UI 使用），索引 0 = 最早（右侧/键 8）</summary>
-    public List<SignalOrbType> GetSignalOrbs() => _signalOrbs;
+    public List<SignalOrb> GetSignalOrbs() => _signalOrbs;
+
+    /// <summary>获取指定信号球类型对应技能的贴图 key（Addressables），无配置返回 null</summary>
+    public string GetOrbSprite(SignalOrbType type)
+    {
+        var ability = GetAbility(OrbSkillIds[(int)type]);
+        return string.IsNullOrEmpty(ability?.OrbSprite) ? null : ability.OrbSprite;
+    }
 
     /// <summary>获取信号球最大数量</summary>
     public int GetMaxSignalOrbs() => MaxSignalOrbs;

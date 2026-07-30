@@ -62,6 +62,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cd8206ca6f2a71408821af33ad532c1
+    m_Address: sprite_orb_lucia_blue
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e6a43f77105aa7429d3888aaab1221d
+    m_Address: sprite_orb_lucia_yellow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 35b0e3fff50500648b82e5acedc2d127
     m_Address: c_luciark3_action_win
     m_ReadOnly: 0
@@ -134,6 +144,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 865e7cefab86d35469b74ef072ffa8e6
     m_Address: c_luciark3_atk_qte
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87e35c5bdf015584a9c1b7b5ba908dee
+    m_Address: sprite_orb_lucia_red
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
