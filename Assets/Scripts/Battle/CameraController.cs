@@ -1,23 +1,29 @@
+using Cinemachine;
 using UnityEngine;
 
 public class CameraController : SingletonMonoBehaviour<CameraController>
 {
-    public float Sensitivity = 100;
+    private const float sensitivity = 20;
 
     private Vector2 LookDirection;
 
-    // ================ 视角自动转向 ================
-
+    // 自动转向
     private float _lastLookTime;
     private float _autoRotateTargetYaw;
     private const float AutoRotateDelay = 2f;
     private const float AutoRotateSpeed = 30f;
     private PlayerController _player;
+    private CinemachineVirtualCamera _cinemachineVirtualCamera;
+
+    protected override void OnAwake()
+    {
+        BattleManager.Instance.OnCharacterSwitch += BindCharacter;
+    }
 
     private void Start()
     {
         LookDirection = Vector2.zero;
-        _player = FindObjectOfType<PlayerController>();
+        _cinemachineVirtualCamera = GetComponent<CinemachineVirtualCamera>();
     }
 
     private void Update()
@@ -31,7 +37,7 @@ public class CameraController : SingletonMonoBehaviour<CameraController>
         }
 
         // 正常鼠标/摇杆控制
-        LookDirection += Sensitivity * Time.deltaTime * lookInput;
+        LookDirection += sensitivity * Time.deltaTime * lookInput;
 
         // 执行自动旋转
         if (Time.time - _lastLookTime >= AutoRotateDelay && _player != null)
@@ -58,5 +64,26 @@ public class CameraController : SingletonMonoBehaviour<CameraController>
         Vector3 right = transform.right;
         right.y = 0;
         return right.normalized;
+    }
+
+    public void BindCharacter(Transform character)
+    {
+        Transform cameraReference = FindFirstChildRecursive(character, "CameraReference");
+        _cinemachineVirtualCamera.Follow = cameraReference;
+        _cinemachineVirtualCamera.LookAt = cameraReference;
+        _player = character.GetComponent<PlayerController>();
+    }
+
+    private static Transform FindFirstChildRecursive(Transform parent, string name)
+    {
+        if (parent.name == name)
+            return parent;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform result = FindFirstChildRecursive(parent.GetChild(i), name);
+            if (result != null)
+                return result;
+        }
+        return null;
     }
 }

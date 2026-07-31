@@ -6090,6 +6090,7 @@ GameObject:
   - component: {fileID: 1514296793212967604}
   - component: {fileID: 997009716534253018}
   - component: {fileID: 886194637091123988}
+  - component: {fileID: 6249717784934552470}
   - component: {fileID: 8970926677046453720}
   - component: {fileID: 892964089317348368}
   m_Layer: 0
@@ -6150,10 +6151,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c81b76137844f9543bdff9c215c9c4c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Level: 0
   CharacterController: {fileID: 0}
   Speed: 4.5
   CanAction: 1
   ComboIndex: 0
+  IsInvincible: 0
+--- !u!114 &6249717784934552470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5281011668659203090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 313a5c51fc4fe034aa9b2d84d28a9d42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!143 &8970926677046453720
 CharacterController:
   m_ObjectHideFlags: 0

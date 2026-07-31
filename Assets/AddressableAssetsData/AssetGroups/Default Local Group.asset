@@ -122,6 +122,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ebe02cb3ccd3a5458d138944778964e
+    m_Address: Lucia
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6a8890d926e3c8c49a9d185fa0e068f1
     m_Address: c_luciark3_atk_attack42
     m_ReadOnly: 0

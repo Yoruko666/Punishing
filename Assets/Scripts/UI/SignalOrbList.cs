@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 
-public class SignalOrbList : MonoBehaviour
+public class SignalOrbList : SingletonMonoBehaviour<SignalOrbList>
 {
     public GameObject OrbPrefab;
     private TextMeshProUGUI OrbNum;
 
-    private const float OrbSpacing = 20f;
-    private const float MoveSpeed = 6000f;
-    private const float SpawnOffset = 400f;
+    private const float orbSpacing = 28f;
+    private const float orbWidth = 140f;
+    private const float moveSpeed = 6000f;
+    private const float spawnOffset = 400f;
     private const int PoolSize = 8;
 
     public PlayerController Owner;
@@ -28,31 +29,27 @@ public class SignalOrbList : MonoBehaviour
         public TextMeshProUGUI KeyText;
     }
 
-    /// <summary>当前可见的视图列表（只包含激活的球）。</summary>
     private readonly List<OrbView> _views = new(PoolSize);
 
-    /// <summary>对象池：预生成的空闲 OrbView。</summary>
     private readonly Stack<OrbView> _pool = new(PoolSize);
 
     private readonly Dictionary<string, Sprite> _spriteCache = new();
 
-    /// <summary>数据列表中左上角（最旧可见）的起始索引。稳定窗口，不被新球挤出。</summary>
     private int _visibleStart;
-
-    private float _orbWidth;
     private PlayerController _subscribed;
 
     private void Awake()
     {
         OrbNum = transform.Find("OrbNum").GetComponent<TextMeshProUGUI>();
 
-        // 预生成 8 颗球入池
         for (int i = 0; i < PoolSize; i++)
         {
             OrbView view = CreatePooledView();
             view.Go.SetActive(false);
             _pool.Push(view);
         }
+
+        BattleManager.Instance.OnCharacterSwitch += (player) => Owner = player.GetComponent<PlayerController>();
     }
 
     /// <summary>创建一颗池中球的 GameObject（一次性设置，之后复用）。</summary>
@@ -67,9 +64,6 @@ public class SignalOrbList : MonoBehaviour
             Rect = go.GetComponent<RectTransform>(),
             KeyText = go.transform.Find("Key/Text").GetComponent<TextMeshProUGUI>(),
         };
-
-        if (view.Rect != null && _orbWidth <= 0f)
-            _orbWidth = view.Rect.sizeDelta.x;
 
         Button btn = go.GetComponent<Button>();
         if (btn != null)
@@ -92,8 +86,8 @@ public class SignalOrbList : MonoBehaviour
 
         ApplyIcon(view);
 
-        float step = _orbWidth + OrbSpacing;
-        float spawnX = -step * index - SpawnOffset;
+        float step = orbWidth + orbSpacing;
+        float spawnX = -step * index - spawnOffset;
         view.TargetX = spawnX;
         SetX(view.Rect, spawnX);
 
@@ -259,7 +253,7 @@ public class SignalOrbList : MonoBehaviour
     {
         for (int i = 0; i < _views.Count; i++)
         {
-            _views[i].TargetX = -(_orbWidth + OrbSpacing) * i;
+            _views[i].TargetX = -(orbWidth + orbSpacing) * i;
             _views[i].Key = PoolSize - i; // 左=槽1, 右=槽8, 从右往左生成（最右=8，向左递减到1）
             if (_views[i].KeyText != null)
                 _views[i].KeyText.text = _views[i].Key.ToString();
@@ -269,7 +263,7 @@ public class SignalOrbList : MonoBehaviour
     /// <summary>每帧把每个球朝目标位置平滑移动。</summary>
     private void AnimateViews()
     {
-        float maxDelta = MoveSpeed * Time.deltaTime;
+        float maxDelta = moveSpeed * Time.deltaTime;
         foreach (var view in _views)
         {
             RectTransform rect = view.Rect;

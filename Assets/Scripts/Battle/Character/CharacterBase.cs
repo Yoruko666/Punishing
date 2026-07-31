@@ -4,6 +4,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 public abstract class CharacterBase : MonoBehaviour
 {
+    public int Level;
     private Animator Animator;
     private AudioSource AudioSource;
 
