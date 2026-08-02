@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Sprites
+  m_EditorClassIdentifier: 
+  m_GroupName: Sprites
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 38b1791b3c3002c4e8c7f1351d6b9a7a
+  m_SerializeEntries:
+  - m_GUID: 1cd8206ca6f2a71408821af33ad532c1
+    m_Address: sprite_orb_lucia_blue
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e6a43f77105aa7429d3888aaab1221d
+    m_Address: sprite_orb_lucia_yellow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25c9996655159b9469ddb6d8a2b886b6
+    m_Address: sprite_orb_lucia_bladewill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87e35c5bdf015584a9c1b7b5ba908dee
+    m_Address: sprite_orb_lucia_red
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 8b9b31130503fd845897138bda23e638, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 2d263d362434fd14ebbfca612d3a665e, type: 2}
+    - {fileID: 11400000, guid: 89767af33bfaf6243b2c1a8b0c6cda25, type: 2}

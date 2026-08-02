@@ -48,9 +48,12 @@ public class SignalOrbList : SingletonMonoBehaviour<SignalOrbList>
             view.Go.SetActive(false);
             _pool.Push(view);
         }
-
+    }
+    private void Start()
+    {
         BattleManager.Instance.OnCharacterSwitch += (player) => Owner = player.GetComponent<PlayerController>();
     }
+
 
     /// <summary>创建一颗池中球的 GameObject（一次性设置，之后复用）。</summary>
     private OrbView CreatePooledView()

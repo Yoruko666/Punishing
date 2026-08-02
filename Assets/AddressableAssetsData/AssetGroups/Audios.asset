@@ -1,0 +1,305 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Audios
+  m_EditorClassIdentifier: 
+  m_GroupName: Audios
+  m_Data:
+    m_SerializedData: []
+  m_GUID: a3c597f842da7a0418c80fa1972dbb97
+  m_SerializeEntries:
+  - m_GUID: 01acedad9a943184cb3287f35fc7392f
+    m_Address: c_luciark3_atk_attack02
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0754ec16f63c83b4991472a1ca588d50
+    m_Address: c_luciark3_skill_ex_3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07c86622888b21d4ab848044b883ef49
+    m_Address: c_luciark3_skill_ultimate_buff
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0864c195332b71e4dafdc756aced6c82
+    m_Address: c_luciark3_skill_attack11
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b90cc471660d494ba7941bbf5ccff28
+    m_Address: c_luciark3_imp_attack31shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 106fdeae5a9c2d24791317af5a8005ae
+    m_Address: c_luciark3_imp_attack02shouji02
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1418d0ff29e05b64f8511dc3deec4827
+    m_Address: c_luciark3_atk_attack41dandao01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19eeb36ac1b3dda4fb67a9d0341c5a66
+    m_Address: c_luciark3_imp_attack21shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c247f2a869aee14299e4a506c8a4462
+    m_Address: c_luciark3_skill_ultimate_weapon
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35b0e3fff50500648b82e5acedc2d127
+    m_Address: c_luciark3_action_win
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37d14541087bf694b909a2e10402407a
+    m_Address: c_luciark3_skill_ex_1_1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3846cca67b6c5004ab8220ab1b7b97bc
+    m_Address: c_luciark3_imp_attack05shouji01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48271cc39e706bc4c972183c7b1c798d
+    m_Address: c_luciark3_skill_attack33
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e66e37b55957394395fe04d3779f233
+    m_Address: c_luciark3_imp_attack41shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56dcc35cd416b104f807ce776a9def1c
+    m_Address: c_luciark3_atk_attack44dandao
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57abdd238c9df7b45bb4364c53515212
+    m_Address: c_luciark3_imp_attack01shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59629fc1c9aae0c4fad9210346c137ba
+    m_Address: c_luciark3_action_flash1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e2752cfaf8525644a6cd8449ab71e94
+    m_Address: c_luciark3_skill_buff01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a8890d926e3c8c49a9d185fa0e068f1
+    m_Address: c_luciark3_atk_attack42
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ef9d4c6be6d2f04380d5fee438eccc2
+    m_Address: c_luciark3_atk_attack44dandao01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79c6ff43ef8880e4c8b909dd4fc1b4eb
+    m_Address: c_luciark3_atk_attack01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 838a25cab6ef8c3488f59a16bae2243a
+    m_Address: c_luciark3_action_born
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 852eb984068ed0640acbf7c3d396e5e3
+    m_Address: c_luciark3_skill_attack31
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 865e7cefab86d35469b74ef072ffa8e6
+    m_Address: c_luciark3_atk_qte
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 89ed786aa7637bb4eba2994bc81e179a
+    m_Address: c_luciark3_skill_attack13
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d183dd261688324c92a274557cc3369
+    m_Address: c_luciark3_imp_attack03shouji03
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f0874f935eb8564db0a9ffbc56e3f04
+    m_Address: c_luciark3_skill_ex_1_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9028ccd3edc58d5449ac94408574c66d
+    m_Address: c_luciark3_atk_attack43
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b2965b2bdb38534ea1dec12b729e6f3
+    m_Address: c_luciark3_atk_attack41dandao
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9e16500957c1977468cbea800994e799
+    m_Address: c_luciark3_imp_attack02shouji01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9ef79025f6832cf409343cb3710f76a8
+    m_Address: c_luciark3_skill_ultimate
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9fff72c3fd77dea439a49f53de685ebc
+    m_Address: c_luciark3_act_attackshoudao01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a64055782328c544c86e4bf3dc76a23d
+    m_Address: c_luciark3_action_flash2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6f466c156c59144997150c1316580da
+    m_Address: c_luciark3_atk_qtedilie
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a80113363f7ddc548bd2427fbdbe2787
+    m_Address: c_luciark3_skill_attack13zha
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa062165919a0f142b18ea23b46451d4
+    m_Address: c_luciark3_imp_qteshouji01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b09eebdfb549bce4d83bf9a6951935cc
+    m_Address: c_luciark3_skill_ex_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c397fb1f0c70162458863a00de952d62
+    m_Address: c_luciark3_imp_attack05shouji02
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c626557a4b79f2540b6b638165937639
+    m_Address: c_luciark3_atk_attack43dandao
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c72d2d3ff7d4383499eff76e52d0d9c1
+    m_Address: c_luciark3_atk_attack04
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd0969abb7276e24f8592c6d7b9d70a3
+    m_Address: c_luciark3_atk_attack05
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cfe94cbbf33fef340a3889d437563bdc
+    m_Address: c_luciark3_atk_attack42dandao01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d56dd0fc47edcd646ade33d8c8cf2606
+    m_Address: c_luciark3_skill_attack21
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d601a674fba4d6542abdd69c03a75268
+    m_Address: c_luciark3_skill_ex_shoudao_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d6597fac89572ad4d8eb56370cb7bddd
+    m_Address: c_luciark3_atk_attack41
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9ebdd0ad384cac46a726b1dde474459
+    m_Address: c_luciark3_imp_attack04shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db0e09e1c3a8eed43886c48e0566ce3a
+    m_Address: c_luciark3_atk_attack44
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc09cdfcd247e2c48bfe6fcfe30b5986
+    m_Address: c_luciark3_imp_ultimate_02
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dcec9f3784664364b8306d2786c8ad95
+    m_Address: c_luciark3_atk_attack03
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df28c274978d59a428d692c17f543444
+    m_Address: c_luciark3_skill_ex_shoudao_1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e469b7a8021b283418a94ee0236de227
+    m_Address: c_luciark3_atk_attack06
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e885cd150c71ed84cb5637b63aa264ac
+    m_Address: c_luciark3_imp_attack03shouji01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e92b0d254f36a0a49be7301639f3fa2e
+    m_Address: c_luciark3_imp_attack11shouji
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3fbd07579795ff4aa805c2567b10f8b
+    m_Address: c_luciark3_atk_attack42dandao
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6827f1d2b3b784478181c799d3d646c
+    m_Address: c_luciark3_atk_attack43dandao01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f90bea5e0311a834eb4855e7c7c64ff2
+    m_Address: c_luciark3_imp_attack03shouji02
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 8b9b31130503fd845897138bda23e638, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ac1ef90f8bfa22a48b0cce3a3d8ca46b, type: 2}
+    - {fileID: 11400000, guid: 6c441388d1348c64498e33dd5edafcf5, type: 2}

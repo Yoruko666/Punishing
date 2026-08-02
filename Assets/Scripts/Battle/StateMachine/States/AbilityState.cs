@@ -88,9 +88,9 @@ public class AbilityState : StateBase
         }
 
         // 按时间线执行视觉特效
-        while (currentAbility.EffectList != null && effectIndex < currentAbility.EffectList.Count && timer > currentAbility.EffectList[effectIndex].ExecTime)
+        while (currentAbility.SkillEffectList != null && effectIndex < currentAbility.SkillEffectList.Count && timer > currentAbility.SkillEffectList[effectIndex].ExecTime)
         {
-            SkillEffect effect = currentAbility.EffectList[effectIndex];
+            SkillEffect effect = currentAbility.SkillEffectList[effectIndex];
             Addressables.LoadAssetAsync<GameObject>(effect.EffectName).Completed += (obj) =>
             {
                 if (obj.Status == AsyncOperationStatus.Succeeded)

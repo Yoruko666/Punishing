@@ -15,13 +15,9 @@ public class CameraController : SingletonMonoBehaviour<CameraController>
     private PlayerController _player;
     private CinemachineVirtualCamera _cinemachineVirtualCamera;
 
-    protected override void OnAwake()
-    {
-        BattleManager.Instance.OnCharacterSwitch += BindCharacter;
-    }
-
     private void Start()
     {
+        BattleManager.Instance.OnCharacterSwitch += BindCharacter;
         LookDirection = Vector2.zero;
         _cinemachineVirtualCamera = GetComponent<CinemachineVirtualCamera>();
     }
