@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 [Serializable]
-public class PlayerInventory
+public class InventoryData
 {
     public List<CharacterData> CharacterList;
     public List<WeaponData> WeaponList;

@@ -7,8 +7,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 {
     public int CharacterId;
 
-    public Action<Transform> OnCharacterSwitch;
-
     private void Start()
     {
         Addressables.LoadAssetAsync<GameObject>(CharacterPath.GetPath(CharacterId)).Completed += (obj) =>
@@ -16,7 +14,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             if (obj.Status == AsyncOperationStatus.Succeeded)
             {
                 GameObject go = Instantiate(obj.Result);
-                OnCharacterSwitch.Invoke(go.transform);
+                EventCenter.Invoke(EventType.OnCharacterSwitch, go.transform);
             }
         };
     }

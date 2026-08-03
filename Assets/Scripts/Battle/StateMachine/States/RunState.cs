@@ -14,7 +14,6 @@ public class RunState : StateBase
 
     public override void OnEnter()
     {
-        // Run 不锁定动作
         _timer = _runStartTime;
         _runStage = RunStage.Start;
         Owner.PlayAnim("RunStart");

@@ -51,11 +51,10 @@ public class SignalOrbList : SingletonMonoBehaviour<SignalOrbList>
     }
     private void Start()
     {
-        BattleManager.Instance.OnCharacterSwitch += (player) => Owner = player.GetComponent<PlayerController>();
+        EventCenter.AddListener<Transform>(EventType.OnCharacterSwitch, BindCharacter);
     }
 
 
-    /// <summary>创建一颗池中球的 GameObject（一次性设置，之后复用）。</summary>
     private OrbView CreatePooledView()
     {
         GameObject go = Instantiate(OrbPrefab, transform);
@@ -343,9 +342,6 @@ public class SignalOrbList : SingletonMonoBehaviour<SignalOrbList>
         };
     }
 
-    // ---------------- 点击消除 ----------------
-
-    /// <summary>点击某个球时，按数据索引直接消除（绕过 slot 换算，兼容等候区偏移）。</summary>
     private void OnOrbClicked(OrbView view)
     {
         if (Owner == null) return;
@@ -356,5 +352,10 @@ public class SignalOrbList : SingletonMonoBehaviour<SignalOrbList>
         // viewIndex: 0=最右(最旧), Count-1=最左(最新)
         int dataIndex = _visibleStart + viewIndex;
         Owner.TryConsumeSignalOrbByDataIndex(dataIndex);
+    }
+
+    private void BindCharacter(Transform character)
+    {
+        Owner = character.GetComponent<PlayerController>();
     }
 }

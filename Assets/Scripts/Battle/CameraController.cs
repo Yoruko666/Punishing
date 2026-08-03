@@ -17,7 +17,7 @@ public class CameraController : SingletonMonoBehaviour<CameraController>
 
     private void Start()
     {
-        BattleManager.Instance.OnCharacterSwitch += BindCharacter;
+        EventCenter.AddListener<Transform>(EventType.OnCharacterSwitch, BindCharacter);
         LookDirection = Vector2.zero;
         _cinemachineVirtualCamera = GetComponent<CinemachineVirtualCamera>();
     }
